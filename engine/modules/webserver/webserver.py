@@ -428,6 +428,19 @@ class webserver(threading.Thread):
     #
     # -------------------------------------------------------------------------
 
+    @app.route("/engine/logs/<timestamp>/delete", methods=['GET'])
+    @apiheaders
+    @validate
+    def r_engine_logs_delete_from(timestamp):
+        global database
+        r = Response("success", "logs",
+                     database.deleteLogs(timestamp.encode('ascii'))).get()
+        return r
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
     @app.route("/engine/shutdown", methods=['GET'])
     @apiheaders
     @validate

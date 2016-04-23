@@ -363,3 +363,29 @@ class DatabaseHandler:
                      str(ex))
             return logs
 
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def deleteLogs(self, timestamp = None):
+        if not timestamp:
+            timestamp = 0
+
+        if type(timestamp) == str:
+            try:
+                timestamp = float(timestamp)
+            except Exception, ex:
+                self.log("critical",
+                         "database deleteLogs() failed to convert timestamp",
+                         str(ex))
+                return logs
+
+        try:
+            r = self.database.logs.remove({"time": {"$lt": timestamp}})
+            return True
+        except Exception, ex:
+            self.log("critical",
+                     "database deleteLogs() failed",
+                     str(ex))
+            return False
+

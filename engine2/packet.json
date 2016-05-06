@@ -1,0 +1,40 @@
+[
+    {
+        "primitive": "byte",
+        "properties": {
+            "name":       "first_byte",
+            "value":      0,
+            "format":     "binary",
+            "synchsafe":  0,
+            "signed":     0,
+            "full_range": 0,
+            "fuzzable":   1
+        }
+    },
+    {
+        "primitive": "byte",
+        "properties": {
+            "name":       "second_byte",
+            "value":      12,
+            "format":     "binary",
+            "synchsafe":  0,
+            "signed":     0,
+            "full_range": 1,
+            "fuzzable":   1
+        },
+        "transforms": [
+            {
+                "transform": "synchsafe",
+                "when": "after"
+            }
+        ]
+    },
+    {
+        "primitive": "bit_field",
+        "properties": {
+            "name":       "second_byte",
+            "width":      4,
+            "value":      0
+        }
+    }
+]

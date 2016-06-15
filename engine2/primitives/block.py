@@ -1,6 +1,7 @@
 import glob
 import importlib
 from __primitive import __primitive__
+from logic.LinearLogic import LinearLogic
 
 global_primitives = {}
 for primitive in glob.glob("primitives/*.py"):
@@ -27,6 +28,7 @@ class block:
         self.primitives = []
         self.iter_cnt   = 0
         self.complete   = False
+        self.domutate   = False
 
         for primitive in self.properties:
             try:
@@ -37,6 +39,8 @@ class block:
             except Exception, ex:
                 raise Exception("failed to instantiate primitive %s (%s)" % \
                       (primitive.get('primitive'), str(ex)))
+
+        self.logic = LinearLogic(self)
 
     # -------------------------------------------------------------------------
     #
@@ -76,7 +80,8 @@ class block:
     # -------------------------------------------------------------------------
 
     def mutate(self):
-        return False
+        self.domutate = True
+        return self.domutate
 
     # -------------------------------------------------------------------------
     #
@@ -96,5 +101,10 @@ class block:
     # -------------------------------------------------------------------------
 
     def render(self):
-        return "".join(self.do_render(self.primitives))
+        if not self.domutate:
+            self.complete = False
+            yield "".join(self.do_render(self.primitives))
+        for iteration in self.logic.run():
+            yield iteration
+        self.complete = True
 

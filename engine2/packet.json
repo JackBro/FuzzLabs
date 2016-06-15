@@ -3,7 +3,7 @@
         "primitive": "byte",
         "properties": {
             "name":       "first_byte",
-            "value":      0,
+            "value":      1,
             "format":     "binary",
             "synchsafe":  0,
             "signed":     0,
@@ -15,7 +15,7 @@
         "primitive": "byte",
         "properties": {
             "name":       "second_byte",
-            "value":      12,
+            "value":      2,
             "format":     "binary",
             "synchsafe":  0,
             "signed":     0,
@@ -35,12 +35,24 @@
             {
                 "primitive": "byte",
                 "properties": {
-                    "name":       "first_byte",
-                    "value":      0,
+                    "name":       "third_byte",
+                    "value":      3,
                     "format":     "binary",
                     "synchsafe":  0,
                     "signed":     0,
                     "full_range": 0,
+                    "fuzzable":   1
+                }
+            },
+            {
+                "primitive": "byte",
+                "properties": {
+                    "name":       "fourth_byte",
+                    "value":      4,
+                    "format":     "binary",
+                    "synchsafe":  0,
+                    "signed":     0,
+                    "full_range": 1,
                     "fuzzable":   1
                 }
             }

@@ -26,6 +26,7 @@ class block:
         self.properties = properties
         self.primitives = []
         self.iter_cnt   = 0
+        self.complete   = False
 
         for primitive in self.properties:
             try:
@@ -36,6 +37,20 @@ class block:
             except Exception, ex:
                 raise Exception("failed to instantiate primitive %s (%s)" % \
                       (primitive.get('primitive'), str(ex)))
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def __len__(self):
+        return len(self.primitives)
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def __getitem__(self, c):
+        return self.primitives[c]
 
     # -------------------------------------------------------------------------
     #

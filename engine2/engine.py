@@ -4,6 +4,7 @@ import json
 import inspect
 import importlib
 from utils import utils
+from logic.LinearLogic import LinearLogic
 
 # =============================================================================
 #
@@ -36,7 +37,6 @@ if __name__ == "__main__":
     if root == None:
         raise Exception("failed to initialize root block")
 
-    for item in root:
-        item.mutate()
-        print item.render()
+    for iteration in LinearLogic(root).run():
+        print iteration
 

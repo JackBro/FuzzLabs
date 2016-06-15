@@ -40,21 +40,6 @@ class utils:
     # -------------------------------------------------------------------------
 
     @staticmethod
-    def t_synchsafe(integer):
-        out = mask = 0x7F
-        while (mask ^ 0x7FFFFFFF):
-            out = integer & ~mask
-            out <<= 1
-            out |= integer & mask
-            mask = ((mask + 1) << 8) - 1
-            integer = out
-        return out
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    @staticmethod
     def bin_to_dec(binary):
         '''
         Convert a binary string to a decimal number.

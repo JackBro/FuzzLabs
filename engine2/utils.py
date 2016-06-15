@@ -35,3 +35,54 @@ class utils:
             raise Exception("failed to parse packet grammar (%s)" % str(ex))
         return data
 
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    @staticmethod
+    def t_synchsafe(integer):
+        out = mask = 0x7F
+        while (mask ^ 0x7FFFFFFF):
+            out = integer & ~mask
+            out <<= 1
+            out |= integer & mask
+            mask = ((mask + 1) << 8) - 1
+            integer = out
+        return out
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    @staticmethod
+    def bin_to_dec(binary):
+        '''
+        Convert a binary string to a decimal number.
+        @type  binary: String
+        @param binary: Binary string
+        @rtype:  Integer
+        @return: Converted bit string
+        '''
+
+        return int(binary, 2)
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    @staticmethod
+    def integer_boundaries(library, max_num, integer):
+        '''
+        Add the supplied integer and border cases to the integer fuzz
+        heuristics library.
+        @type  integer: Int
+        @param integer: Integer to append to fuzz heuristics
+        '''
+        ilist = []
+        for i in xrange(-10, 10):
+            case = integer + i
+            if 0 > case or case > max_num: continue
+            if case in library: continue
+            ilist.append(case)
+        return ilist
+

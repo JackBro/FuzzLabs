@@ -20,7 +20,7 @@ class block:
     #
     # -------------------------------------------------------------------------
 
-    def __init__(self, properties):
+    def __init__(self, properties, transforms = None):
         global all_properties
         self.type       = self.__class__.__name__
         self.properties = properties

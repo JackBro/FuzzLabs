@@ -25,6 +25,9 @@ class Property(dict):
                                        prop_desc.get('values'))
         self.value = prop_value
 
+        self.total_mutations = None
+        self.mutation_index  = None
+
     # -------------------------------------------------------------------------
     #
     # -------------------------------------------------------------------------
@@ -80,11 +83,11 @@ class __primitive__(dict):
 
     def __init__(self, properties, all_properties, transforms = None):
         self.check_properties(all_properties, properties)
-        self.transforms = transforms
-        self.rendered     = ""    # rendered value
-        self.complete     = False # flag if this primitive has been completely fuzzed
-        self.library      = []    # library of fuzz heuristics
-        self.mutant_index = 0     # current mutation number
+        self.transforms     = transforms
+        self.rendered       = ""    # rendered value
+        self.complete       = False # flag if this primitive has been completely fuzzed
+        self.library        = []    # library of fuzz heuristics
+        self.mutation_index = 0     # current mutation number
 
         # Set up properties that were provided in the grammar
         for prop in properties:
@@ -101,6 +104,9 @@ class __primitive__(dict):
                 p = Property(prop.get('name'), prop.get('default'), prop)
                 self[prop.get('name')] = p.value
                 del p
+
+        # First item in library is the original value
+        self.library.append(self.value)
 
         # TODO: apply "before" transformations to self.value
 
@@ -154,20 +160,28 @@ class __primitive__(dict):
     # -------------------------------------------------------------------------
 
     def reset(self):
-        pass
+        self.mutation_index = 0
+        self.value = self.library[0]
 
     # -------------------------------------------------------------------------
     #
     # -------------------------------------------------------------------------
 
     def mutate(self):
-        pass
+        if self.mutation_index > len(self.library) - 1:
+            self.complete = True
+            self.value = self.library[0]
+
+        if self.complete == True: return
+
+        self.value = self.library[self.mutation_index]
+        self.mutation_index += 1
 
     # -------------------------------------------------------------------------
     #
     # -------------------------------------------------------------------------
 
     def render(self):
+        return self.value
         # TODO: apply "after" transformations to self.value
-        pass
 

@@ -37,5 +37,6 @@ if __name__ == "__main__":
         raise Exception("failed to initialize root block")
 
     for item in root:
-        print item
+        item.mutate()
+        print item.render()
 

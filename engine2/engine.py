@@ -4,7 +4,7 @@ import json
 import inspect
 import importlib
 from utils import utils
-from logic.LinearLogic import LinearLogic
+from logic.Linear import Linear
 
 # =============================================================================
 #
@@ -19,9 +19,14 @@ def read_packet_grammar(filename):
 # =============================================================================
 
 def init_root(grammar):
-    root = None
+    root       = None
+    logic      = grammar.get('logic')
+    transforms = grammar.get('transforms')
+    properties = grammar.get('properties')
+
     try:
-        root = getattr(importlib.import_module("primitives.block"), "block")(grammar)
+        root = getattr(importlib.import_module("primitives.block"), "block")(
+                   properties, transforms, logic)
     except Exception, ex:
         print "failed to instantiate root block (%s)" % str(ex)
     return root
@@ -31,12 +36,12 @@ def init_root(grammar):
 # =============================================================================
 
 if __name__ == "__main__":
-    g = read_packet_grammar("./packet.json")
-    root = init_root(g)
+    root = init_root(read_packet_grammar("./packet.json"))
 
     if root == None:
         raise Exception("failed to initialize root block")
 
-    for iteration in LinearLogic(root).run():
+    # We always apply linear logic on the root element.
+    for iteration in Linear(root).run():
         print iteration
 

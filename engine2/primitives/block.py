@@ -1,7 +1,13 @@
 import glob
 import importlib
 from __primitive import __primitive__
-from logic.LinearLogic import LinearLogic
+
+global_logic = {}
+for logic in glob.glob("logic/*.py"):
+    name = logic.split(".")[0].split("/")[1]
+    lname = name.lower()
+    if lname[:2] != "__":
+        global_logic[lname] = importlib.import_module("logic." + name)
 
 global_primitives = {}
 for primitive in glob.glob("primitives/*.py"):
@@ -21,7 +27,7 @@ class block:
     #
     # -------------------------------------------------------------------------
 
-    def __init__(self, properties, transforms = None):
+    def __init__(self, properties, transforms = None, logic = "linear"):
         global all_properties
         self.type       = self.__class__.__name__
         self.properties = properties
@@ -34,14 +40,22 @@ class block:
             try:
                 inst = getattr(global_primitives[primitive.get('primitive')], 
                                primitive['primitive'])
-                inst = inst(primitive.get('properties'), primitive.get('transforms'))
+                if primitive.get('primitive') == "block":
+                    inst = inst(primitive.get('properties'),
+                                primitive.get('transforms'), 
+                                primitive.get('logic'))
+                else:
+                    inst = inst(primitive.get('properties'),
+                                primitive.get('transforms'))
                 self.primitives.append(inst)
             except Exception, ex:
                 raise Exception("failed to instantiate primitive %s (%s)" % \
                       (primitive.get('primitive'), str(ex)))
 
         self.value = "".join(self.do_render(self.primitives))
-        self.logic = LinearLogic(self)
+
+        self.logic = getattr(global_logic[logic],
+                             logic[0].upper() + logic[1:])(self)
 
     # -------------------------------------------------------------------------
     #

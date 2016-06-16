@@ -1,27 +1,32 @@
-[
-    {
-        "primitive": "byte",
-        "properties": {
-            "name":       "first_byte",
-            "value":      1,
-            "format":     "ascii",
-            "synchsafe":  0,
-            "signed":     0,
-            "full_range": 0,
-            "fuzzable":   1
-        }
-    },
-    {
-        "primitive": "block",
-        "properties": [
-            {
-                "primitive": "string",
-                "properties": {
-                    "name":       "first_string",
-                    "value":      "hello",
-                    "fuzzable":   1
-                }
+{
+    "primitive": "block",
+    "logic": "linear",
+    "properties": [
+        {
+            "primitive": "byte",
+            "properties": {
+                "name":       "first_byte",
+                "value":      1,
+                "format":     "ascii",
+                "synchsafe":  0,
+                "signed":     0,
+                "full_range": 0,
+                "fuzzable":   1
             }
-        ]
-    }
-]
+        },
+        {
+            "primitive": "block",
+            "logic": "linear",
+            "properties": [
+                {
+                    "primitive": "string",
+                    "properties": {
+                        "name":       "first_string",
+                        "value":      "hello",
+                        "fuzzable":   1
+                    }
+                }
+            ]
+        }
+    ]
+}

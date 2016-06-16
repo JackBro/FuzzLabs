@@ -27,14 +27,14 @@
             }
         },
         {
-            "primitive": "word",
+            "primitive": "qword",
             "properties": {
-                "name":       "first_word",
+                "name":       "first_qword",
                 "value":      1,
-                "format":     "binary",
+                "format":     "ascii",
                 "synchsafe":  0,
                 "signed":     1,
-                "full_range": 1,
+                "full_range": 0,
                 "fuzzable":   1
             }
         },

@@ -4,10 +4,10 @@
         "properties": {
             "name":       "first_byte",
             "value":      1,
-            "format":     "binary",
+            "format":     "ascii",
             "synchsafe":  0,
             "signed":     0,
-            "full_range": 0,
+            "full_range": 1,
             "fuzzable":   1
         }
     },
@@ -16,18 +16,12 @@
         "properties": {
             "name":       "second_byte",
             "value":      2,
-            "format":     "binary",
+            "format":     "ascii",
             "synchsafe":  0,
             "signed":     0,
             "full_range": 1,
             "fuzzable":   1
-        },
-        "transforms": [
-            {
-                "transform": "synchsafe",
-                "when": "after"
-            }
-        ]
+        }
     },
     {
         "primitive": "block",
@@ -36,11 +30,11 @@
                 "primitive": "byte",
                 "properties": {
                     "name":       "third_byte",
-                    "value":      3,
+                    "value":      20,
                     "format":     "binary",
                     "synchsafe":  0,
                     "signed":     0,
-                    "full_range": 0,
+                    "full_range": 1,
                     "fuzzable":   1
                 }
             },
@@ -49,13 +43,30 @@
                 "properties": {
                     "name":       "fourth_byte",
                     "value":      4,
-                    "format":     "binary",
+                    "format":     "ascii",
                     "synchsafe":  0,
                     "signed":     0,
                     "full_range": 1,
                     "fuzzable":   1
                 }
-            }
+            },
+            {
+                "primitive": "block",
+                "properties": [
+                    {
+                        "primitive": "byte",
+                        "properties": {
+                            "name":       "fifth_byte",
+                            "value":      5,
+                            "format":     "ascii",
+                            "synchsafe":  0,
+                            "signed":     0,
+                            "full_range": 1,
+                            "fuzzable":   1
+                        }
+                    }
+                ] 
+            } 
         ]
     }
 ]

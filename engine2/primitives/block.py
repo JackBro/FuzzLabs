@@ -40,6 +40,7 @@ class block:
                 raise Exception("failed to instantiate primitive %s (%s)" % \
                       (primitive.get('primitive'), str(ex)))
 
+        self.value = "".join(self.do_render(self.primitives))
         self.logic = LinearLogic(self)
 
     # -------------------------------------------------------------------------
@@ -105,6 +106,6 @@ class block:
             self.complete = False
             yield "".join(self.do_render(self.primitives))
         for iteration in self.logic.run():
-            yield iteration
+            yield "".join(iteration)
         self.complete = True
 

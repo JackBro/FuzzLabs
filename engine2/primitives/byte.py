@@ -112,7 +112,7 @@ class byte(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
-        if format == "binary":
+        if self.format == "binary":
             return struct.pack("B", self.value)
         return str(self.value)
 

@@ -7,7 +7,7 @@
             "properties": {
                 "name":       "http_method",
                 "value":      "GET",
-                "fuzzable":   1
+                "fuzzable":   0
             }
         },
         {
@@ -23,18 +23,18 @@
             "properties": {
                 "name":       "http_uri",
                 "value":      "/",
-                "fuzzable":   1
+                "fuzzable":   0 
             }
         },
         {
-            "primitive": "byte",
+            "primitive": "word",
             "properties": {
-                "name":       "first_byte",
+                "name":       "first_word",
                 "value":      1,
-                "format":     "ascii",
+                "format":     "binary",
                 "synchsafe":  0,
-                "signed":     0,
-                "full_range": 0,
+                "signed":     1,
+                "full_range": 1,
                 "fuzzable":   1
             }
         },

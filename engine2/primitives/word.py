@@ -61,7 +61,7 @@ all_properties = [
 #
 # =============================================================================
 
-class byte(__primitive__):
+class word(__primitive__):
 
     # -------------------------------------------------------------------------
     #
@@ -77,9 +77,9 @@ class byte(__primitive__):
     # -------------------------------------------------------------------------
 
     def init_library(self):
-        max = utils.bin_to_dec("1" + "0" * 8) # 8 bits
+        max = utils.bin_to_dec("1" + "0" * 16) # 16 bits
         if self.signed:
-            max = utils.bin_to_dec("1" + "0" * 8) / 2 - 1
+	    max = utils.bin_to_dec("1" + "0" * 16) / 2 - 1
 
         if self.max_num and self.max_num > max:
             raise Exception("%s primitive maximum value is %d" % (self.type, max))
@@ -116,9 +116,12 @@ class byte(__primitive__):
 
     def render(self):
         if self.format == "binary":
-            if self.signed:
-                return struct.pack("b", self.value)
-            else:
-                return struct.pack("B", self.value)
+            try:
+                if self.signed:
+                    return struct.pack("h", self.value)
+                else:
+                    return struct.pack("H", self.value)
+            except Exception, ex:
+                raise Exception(str(ex) + " - value: %d" % self.value)
         return str(self.value)
 

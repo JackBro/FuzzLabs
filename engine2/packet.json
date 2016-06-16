@@ -7,19 +7,7 @@
             "format":     "ascii",
             "synchsafe":  0,
             "signed":     0,
-            "full_range": 1,
-            "fuzzable":   1
-        }
-    },
-    {
-        "primitive": "byte",
-        "properties": {
-            "name":       "second_byte",
-            "value":      2,
-            "format":     "ascii",
-            "synchsafe":  0,
-            "signed":     0,
-            "full_range": 1,
+            "full_range": 0,
             "fuzzable":   1
         }
     },
@@ -27,46 +15,13 @@
         "primitive": "block",
         "properties": [
             {
-                "primitive": "byte",
+                "primitive": "string",
                 "properties": {
-                    "name":       "third_byte",
-                    "value":      20,
-                    "format":     "binary",
-                    "synchsafe":  0,
-                    "signed":     0,
-                    "full_range": 1,
+                    "name":       "first_string",
+                    "value":      "hello",
                     "fuzzable":   1
                 }
-            },
-            {
-                "primitive": "byte",
-                "properties": {
-                    "name":       "fourth_byte",
-                    "value":      4,
-                    "format":     "ascii",
-                    "synchsafe":  0,
-                    "signed":     0,
-                    "full_range": 1,
-                    "fuzzable":   1
-                }
-            },
-            {
-                "primitive": "block",
-                "properties": [
-                    {
-                        "primitive": "byte",
-                        "properties": {
-                            "name":       "fifth_byte",
-                            "value":      5,
-                            "format":     "ascii",
-                            "synchsafe":  0,
-                            "signed":     0,
-                            "full_range": 1,
-                            "fuzzable":   1
-                        }
-                    }
-                ] 
-            } 
+            }
         ]
     }
 ]

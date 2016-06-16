@@ -55,7 +55,6 @@ class string(__primitive__):
         global all_properties
         self.type = self.__class__.__name__
         __primitive__.__init__(self, properties, all_properties, transforms)
-        self.total_mutations = len(self.library)
 
     # -------------------------------------------------------------------------
     #
@@ -314,9 +313,7 @@ class string(__primitive__):
                 if len(v) > self.size: continue
                 v = v + self.padding * (self.size - len(v))
 
-            self.library.append(v)
-
-        self.library += list(set(self.library))
+            if v not in self.library: self.library.append(v)
 
     # -------------------------------------------------------------------------
     #

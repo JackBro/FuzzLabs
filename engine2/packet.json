@@ -7,7 +7,6 @@
             "properties": {
                 "name":       "http_method",
                 "value":      "GET",
-                "max_len":    64,
                 "fuzzable":   1
             }
         },

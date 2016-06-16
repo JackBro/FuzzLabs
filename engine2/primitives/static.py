@@ -37,8 +37,6 @@ class static(__primitive__):
         global all_properties
         self.type = self.__class__.__name__
         __primitive__.__init__(self, properties, all_properties, transforms)
-        self.library = [self.value]
-        self.total_mutations = len(self.library)
 
     # -------------------------------------------------------------------------
     #

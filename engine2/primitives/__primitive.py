@@ -88,6 +88,7 @@ class __primitive__(dict):
         self.complete       = False # flag if this primitive has been completely fuzzed
         self.library        = []    # library of fuzz heuristics
         self.mutation_index = 0     # current mutation number
+        self.total_mutations = 0
 
         # Set up properties that were provided in the grammar
         for prop in properties:
@@ -111,6 +112,7 @@ class __primitive__(dict):
        # do not initialize library is primitive is non-fuzzable
         if self.fuzzable:
             self.init_library()
+            self.total_mutations = len(self.library)
         else:
             self.complete = True
 

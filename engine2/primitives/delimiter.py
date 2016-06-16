@@ -37,7 +37,6 @@ class delimiter(__primitive__):
         global all_properties
         self.type = self.__class__.__name__
         __primitive__.__init__(self, properties, all_properties, transforms)
-        self.total_mutations = len(self.library)
 
     # -------------------------------------------------------------------------
     #
@@ -58,8 +57,6 @@ class delimiter(__primitive__):
         for delim in delims:
             for round in rounds:
                 self.library.append(delim * round)
-
-        self.library = list(set(self.library))
 
     # -------------------------------------------------------------------------
     #

@@ -35,6 +35,23 @@ def init_root(grammar):
 #
 # =============================================================================
 
+def collect_statistics(root):
+    l = []
+    for p in root.primitives:
+        if p.type == "block": l += collect_statistics(p)
+        name = p.get('name')
+        if p.type != "block":
+            l.append({"name": name,
+                      "type": p.get('type'),
+                      "total_mutations": p.get('total_mutations'),
+                      "mutation_index": p.get('mutation_index')
+            })
+    return l
+
+# =============================================================================
+#
+# =============================================================================
+
 if __name__ == "__main__":
     root = init_root(read_packet_grammar("./packet.json"))
 
@@ -43,5 +60,6 @@ if __name__ == "__main__":
 
     # We always apply linear logic on the root element.
     for iteration in Linear(root).run():
+        print collect_statistics(root)
         print iteration
 

@@ -13,54 +13,47 @@ all_properties = [
         "name": "max_num",
         "type": ["int", "long"],
         "default": 0,
-        "error": "primitive requires value to be of type int"
+        "error": "primitive requires max_num to be of type int"
     },
     {
         "name": "endian",
         "type": "str",
         "values": ["big", "little"],
         "default": "little",
-        "error": "primitive requires value to be of type str ('big' or 'little')"
+        "error": "primitive requires endian to be of type str ('big' or 'little')"
     },
     {
         "name": "format",
         "type": "str",
         "values": ["binary", "ascii"],
         "default": "binary",
-        "error": "primitive requires value to be of type str"
+        "error": "primitive requires format to be of type str"
     },
     {
         "name": "signed",
         "type": "bool",
         "values": [0, 1],
         "default": 0,
-        "error": "primitive requires value to be of type bool (1 or 0)"
+        "error": "primitive requires signed to be of type bool (1 or 0)"
     },
     {
         "name": "full_range",
         "type": "bool",
         "values": [0, 1],
         "default": 0,
-        "error": "primitive requires value to be of type bool (1 or 0)"
+        "error": "primitive requires full_range to be of type bool (1 or 0)"
     },
     {
         "name": "fuzzable",
         "type": "bool",
         "values": [0, 1],
         "default": 1,
-        "error": "primitive requires value to be of type bool (1 or 0)"
-    },
-    {
-        "name": "synchsafe",
-        "type": "bool",
-        "values": [0, 1],
-        "default": 0,
-        "error": "primitive requires value to be of type bool (1 or 0)"
+        "error": "primitive requires fuzzable to be of type bool (1 or 0)"
     },
     {
         "name": "name",
         "type": "str",
-        "error": "primitive requires value to be of type str"
+        "error": "primitive requires name to be of type str"
     }
 ]
 
@@ -78,7 +71,6 @@ class byte(__primitive__):
         global all_properties
         self.type = self.__class__.__name__
         __primitive__.__init__(self, properties, all_properties, transforms)
-        self.init_library()
         self.total_mutations = len(self.library)
 
     # -------------------------------------------------------------------------

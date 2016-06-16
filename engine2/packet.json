@@ -3,6 +3,31 @@
     "logic": "linear",
     "properties": [
         {
+            "primitive": "string",
+            "properties": {
+                "name":       "http_method",
+                "value":      "GET",
+                "max_len":    64,
+                "fuzzable":   1
+            }
+        },
+        {
+            "primitive": "delimiter",
+            "properties": {
+                "name":       "space",
+                "value":      " ",
+                "fuzzable":   0
+            }
+        },
+        {
+            "primitive": "static",
+            "properties": {
+                "name":       "http_uri",
+                "value":      "/",
+                "fuzzable":   1
+            }
+        },
+        {
             "primitive": "byte",
             "properties": {
                 "name":       "first_byte",
@@ -15,14 +40,32 @@
             }
         },
         {
+            "primitive": "static",
+            "properties": {
+                "name":       "http_proto",
+                "value":      " HTTP/1.1\r\n",
+                "fuzzable":   1
+            }
+        },
+        {
             "primitive": "block",
             "logic": "linear",
             "properties": [
                 {
+                    "primitive": "static",
+                    "properties": {
+                        "name":       "http_header_host",
+                        "value":      "Host: ",
+                        "max_len":    64,
+                        "fuzzable":   1
+                    }
+                },
+                {
                     "primitive": "string",
                     "properties": {
-                        "name":       "first_string",
-                        "value":      "hello",
+                        "name":       "http_header_host_value",
+                        "value":      "127.0.0.1",
+                        "max_len":    128,
                         "fuzzable":   1
                     }
                 }

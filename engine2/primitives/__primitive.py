@@ -108,7 +108,20 @@ class __primitive__(dict):
         # First item in library is the original value
         self.library.append(self.value)
 
+       # do not initialize library is primitive is non-fuzzable
+        if self.fuzzable:
+            self.init_library()
+        else:
+            self.complete = True
+
         # TODO: apply "before" transformations to self.value
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def init_library(self):
+        pass
 
     # -------------------------------------------------------------------------
     #
@@ -168,14 +181,15 @@ class __primitive__(dict):
     # -------------------------------------------------------------------------
 
     def mutate(self):
-        if self.mutation_index > len(self.library) - 1:
-            self.complete = True
-            self.value = self.library[0]
+        if self.fuzzable:
+            if self.mutation_index > len(self.library) - 1:
+                self.complete = True
+                self.value = self.library[0]
 
-        if self.complete == True: return
+            if self.complete == True: return
 
-        self.value = self.library[self.mutation_index]
-        self.mutation_index += 1
+            self.value = self.library[self.mutation_index]
+            self.mutation_index += 1
 
     # -------------------------------------------------------------------------
     #

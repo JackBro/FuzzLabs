@@ -19,7 +19,7 @@ all_properties = [
         "name": "max_len",
         "type": ["int", "long"],
         "default": 0,
-        "error": "primitive requires size to be of type int or long"
+        "error": "primitive requires max_len to be of type int or long"
     },
     {
         "name": "padding",
@@ -32,12 +32,12 @@ all_properties = [
         "type": "bool",
         "values": [0, 1],
         "default": 1,
-        "error": "primitive requires value to be of type bool (1 or 0)"
+        "error": "primitive requires fuzzable to be of type bool (1 or 0)"
     },
     {
         "name": "name",
         "type": "str",
-        "error": "primitive requires value to be of type str"
+        "error": "primitive requires name to be of type str"
     }
 ]
 
@@ -55,7 +55,6 @@ class string(__primitive__):
         global all_properties
         self.type = self.__class__.__name__
         __primitive__.__init__(self, properties, all_properties, transforms)
-        self.init_library()
         self.total_mutations = len(self.library)
 
     # -------------------------------------------------------------------------
@@ -317,7 +316,7 @@ class string(__primitive__):
 
             self.library.append(v)
 
-        self.library = list(set(self.library))
+        self.library += list(set(self.library))
 
     # -------------------------------------------------------------------------
     #

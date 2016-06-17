@@ -10,24 +10,11 @@ all_properties = [
         "error": "primitive requires value to be of type long or int"
     },
     {
-        "name": "max_num",
-        "type": ["int", "long"],
-        "default": 0,
-        "error": "primitive requires max_num to be of type int"
-    },
-    {
-        "name": "endian",
-        "type": "str",
-        "values": ["big", "little"],
-        "default": "little",
-        "error": "primitive requires endian to be of type str ('big' or 'little')"
-    },
-    {
-        "name": "signed",
+        "name": "fuzzable",
         "type": "bool",
-        "values": [0, 1],
-        "default": 0,
-        "error": "primitive requires signed to be of type bool (1 or 0)"
+        "values": [1],
+        "default": 1,
+        "error": "primitive requires fuzzable to be True (1)"
     },
     {
         "name": "name",
@@ -50,12 +37,13 @@ class increment(__primitive__):
         global all_properties
         self.type = self.__class__.__name__
         __primitive__.__init__(self, properties, all_properties, transforms)
+        self.total_mutations = 1
 
     # -------------------------------------------------------------------------
     #
     # -------------------------------------------------------------------------
 
-    def init_library(self):
+    def mutate(self):
         pass
 
     # -------------------------------------------------------------------------
@@ -63,5 +51,6 @@ class increment(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
+        self.value += 1
         return str(self.value)
 

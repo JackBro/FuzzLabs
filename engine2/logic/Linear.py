@@ -17,7 +17,7 @@ class Linear:
     #
     # -------------------------------------------------------------------------
 
-    def run(self):
+    def base(self):
         data = []
         for item_position in range(0, len(self.root)):
             if self.position == item_position:
@@ -26,15 +26,23 @@ class Linear:
                 r = self.root[item_position].render()
                 if type(r).__name__ == "generator": r = r.next()
                 data.append(r)
+        return data
 
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def run(self):
         for item_position in range(0, len(self.root)):
             if self.position == item_position:
-                while not self.root[item_position].complete:
-                    self.root[item_position].mutate()
-                    r = self.root[item_position].render()
-                    if type(r).__name__ == "generator":
-                        r = self.root[item_position].render().next()
-                    data[item_position] = r
-                    yield "".join(data)
+                if self.root[item_position].type != "increment":
+                    while not self.root[item_position].complete:
+                        self.root[item_position].mutate()
+                        r = self.root[item_position].render()
+                        if type(r).__name__ == "generator":
+                            r = self.root[item_position].render().next()
+                        data = self.base()
+                        data[item_position] = r
+                        yield "".join(data)
                 self.position += 1
 

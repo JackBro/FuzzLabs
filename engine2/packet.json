@@ -3,13 +3,17 @@
     "logic": "linear",
     "properties": [
         {
-            "primitive": "rand",
+            "primitive": "increment",
+            "properties": {
+                "name":       "incrementing_value",
+                "value":      0
+            }
+        },
+        {
+            "primitive": "string",
             "properties": {
                 "name":       "random_value",
-                "value":      0,
-                "min_length": 32,
-                "max_length": 32,
-                "max_mutations": 10
+                "value":      "test"
             }
         }
     ]

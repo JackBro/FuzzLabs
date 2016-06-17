@@ -37,7 +37,8 @@ class increment(__primitive__):
         global all_properties
         self.type = self.__class__.__name__
         __primitive__.__init__(self, properties, all_properties, transforms)
-        self.total_mutations = 1
+        self.total_mutations = 0
+        self.ignore = True
 
     # -------------------------------------------------------------------------
     #

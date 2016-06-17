@@ -35,7 +35,8 @@ class Linear:
     def run(self):
         for item_position in range(0, len(self.root)):
             if self.position == item_position:
-                if self.root[item_position].type != "increment":
+                print self.root[item_position].get('ignore')
+                if not self.root[item_position].get('ignore'):
                     while not self.root[item_position].complete:
                         self.root[item_position].mutate()
                         r = self.root[item_position].render()

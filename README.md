@@ -1,6 +1,9 @@
 # FuzzLabs
 
+**17/06/2016**: Started implementing a new mutation engine. So far it seems to be pretty cool. Feel free to have a look at the code (engine-core-new branch) to see what to expect.
+
 **11/04/2016**: The project is **not** dead. Things are happening in the background just a bit slowly as priorities have changed.
+
 
 FuzzLabs is a modular fuzzing framework which uses a modified version of Sulley as it's core fuzzing engine.
 For more information please refer to the Wiki.

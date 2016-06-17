@@ -3,72 +3,14 @@
     "logic": "linear",
     "properties": [
         {
-            "primitive": "string",
+            "primitive": "rand",
             "properties": {
-                "name":       "http_method",
-                "value":      "GET",
-                "fuzzable":   0
+                "name":       "random_value",
+                "value":      0,
+                "min_length": 32,
+                "max_length": 32,
+                "max_mutations": 10
             }
-        },
-        {
-            "primitive": "delimiter",
-            "properties": {
-                "name":       "space",
-                "value":      " ",
-                "fuzzable":   0
-            }
-        },
-        {
-            "primitive": "static",
-            "properties": {
-                "name":       "http_uri",
-                "value":      "/",
-                "fuzzable":   0 
-            }
-        },
-        {
-            "primitive": "qword",
-            "properties": {
-                "name":       "first_qword",
-                "value":      1,
-                "format":     "ascii",
-                "synchsafe":  0,
-                "signed":     1,
-                "full_range": 0,
-                "fuzzable":   1
-            }
-        },
-        {
-            "primitive": "static",
-            "properties": {
-                "name":       "http_proto",
-                "value":      " HTTP/1.1\r\n",
-                "fuzzable":   1
-            }
-        },
-        {
-            "primitive": "block",
-            "logic": "linear",
-            "properties": [
-                {
-                    "primitive": "static",
-                    "properties": {
-                        "name":       "http_header_host",
-                        "value":      "Host: ",
-                        "max_len":    64,
-                        "fuzzable":   1
-                    }
-                },
-                {
-                    "primitive": "string",
-                    "properties": {
-                        "name":       "http_header_host_value",
-                        "value":      "127.0.0.1",
-                        "max_len":    128,
-                        "fuzzable":   1
-                    }
-                }
-            ]
         }
     ]
 }

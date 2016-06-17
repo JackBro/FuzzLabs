@@ -1,6 +1,7 @@
 from __primitive import __primitive__
 from utils import utils
 import struct
+import random
 
 all_properties = [
     {
@@ -24,15 +25,22 @@ all_properties = [
     {
         "name": "max_mutations",
         "type": ["int", "long"],
-        "default": 0,
+        "default": 1000,
         "error": "primitive requires max_mutations to be of type int or long"
+    },
+    {
+        "name": "format",
+        "type": "str",
+        "values": ["binary", "ascii"],
+        "default": "binary",
+        "error": "primitive requires format to be of type str"
     },
     {
         "name": "fuzzable",
         "type": "bool",
-        "values": [0, 1],
+        "values": [1],
         "default": 1,
-        "error": "primitive requires fuzzable to be of type bool (1 or 0)"
+        "error": "primitive requires fuzzable to be True (1)"
     },
     {
         "name": "name",
@@ -45,7 +53,7 @@ all_properties = [
 #
 # =============================================================================
 
-class random(__primitive__):
+class rand(__primitive__):
 
     # -------------------------------------------------------------------------
     #
@@ -55,13 +63,33 @@ class random(__primitive__):
         global all_properties
         self.type = self.__class__.__name__
         __primitive__.__init__(self, properties, all_properties, transforms)
+        self.total_mutations = self.max_mutations
 
     # -------------------------------------------------------------------------
     #
     # -------------------------------------------------------------------------
 
     def init_library(self):
-        pass
+        if self.min_length > self.max_length:
+            raise Exception("%s primitive requires min_length to be less " +\
+                            "than max_length" % self.type)
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def mutate(self):
+        if self.mutation_index >= self.total_mutations:
+            self.complete = True
+            self.value = self.library[0]
+            return
+
+        x = []
+        times = random.randint(self.min_length, self.max_length) 
+        for c in range(0, times):
+            x.append(struct.pack("B", random.randint(0, 255)))
+        self.value = ''.join(x)
+        self.mutation_index += 1
 
     # -------------------------------------------------------------------------
     #

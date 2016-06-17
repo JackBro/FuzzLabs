@@ -23,25 +23,11 @@ all_properties = [
         "error": "primitive requires endian to be of type str ('big' or 'little')"
     },
     {
-        "name": "format",
-        "type": "str",
-        "values": ["binary", "ascii"],
-        "default": "binary",
-        "error": "primitive requires format to be of type str"
-    },
-    {
         "name": "signed",
         "type": "bool",
         "values": [0, 1],
         "default": 0,
         "error": "primitive requires signed to be of type bool (1 or 0)"
-    },
-    {
-        "name": "fuzzable",
-        "type": "bool",
-        "values": [0, 1],
-        "default": 1,
-        "error": "primitive requires fuzzable to be of type bool (1 or 0)"
     },
     {
         "name": "name",
@@ -77,12 +63,5 @@ class increment(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
-        """
-        if self.format == "binary":
-            if self.signed:
-                return struct.pack("b", self.value)
-            else:
-                return struct.pack("B", self.value)
-        """
         return str(self.value)
 

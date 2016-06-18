@@ -6,14 +6,14 @@ global_logic = {}
 for logic in glob.glob("logic/*.py"):
     name = logic.split(".")[0].split("/")[1]
     lname = name.lower()
-    if lname[:2] != "__":
-        global_logic[lname] = importlib.import_module("logic." + name)
+    if lname[:2] == "__": continue
+    global_logic[lname] = importlib.import_module("logic." + name)
 
 global_primitives = {}
 for primitive in glob.glob("primitives/*.py"):
     name = primitive.split(".")[0].split("/")[1]
-    if name[:2] != "__":
-        global_primitives[name] = importlib.import_module("primitives." + name)
+    if name[:2] == "__": continue
+    global_primitives[name] = importlib.import_module("primitives." + name)
 
 all_properties = []
 

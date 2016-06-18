@@ -115,6 +115,7 @@ class dword(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
+        super(dword, self).render()
         if self.format == "binary":
             try:
                 if self.signed:

@@ -18,16 +18,19 @@
             }
         },
         {
-            "primitive": "rand",
+            "primitive": "string",
             "properties": {
-                "name":          "random_value",
-                "min_length":    64,
-                "max_length":    64,
-                "max_mutations": 64,
-                "min_value":     32,
-                "max_value":     126,
-                "value":         0
-            }
+                "name":       "string_value",
+                "value":      "test",
+                "max_len":    64,
+                "fuzzable":   1 
+            },
+            "transforms": [
+                {
+                    "name": "urlencode",
+                    "apply": "after"
+                }
+            ]
         }
     ]
 }

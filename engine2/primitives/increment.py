@@ -53,5 +53,6 @@ class increment(__primitive__):
 
     def render(self):
         self.value += 1
+        super(increment, self).render()
         return str(self.value)
 

@@ -60,6 +60,6 @@ if __name__ == "__main__":
 
     # We always apply linear logic on the root element.
     for iteration in Linear(root).run():
-        print collect_statistics(root)
+        #print collect_statistics(root)
         print iteration
 

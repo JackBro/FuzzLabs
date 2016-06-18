@@ -43,5 +43,6 @@ class static(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
+        super(static, self).render()
         return str(self.value)
 

@@ -115,6 +115,7 @@ class qword(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
+        super(qword, self).render()
         if self.format == "binary":
             try:
                 if self.signed:

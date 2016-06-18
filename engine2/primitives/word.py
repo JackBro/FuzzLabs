@@ -115,6 +115,7 @@ class word(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
+        self.value == super(word, self).render()
         if self.format == "binary":
             try:
                 if self.signed:

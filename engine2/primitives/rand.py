@@ -108,5 +108,6 @@ class rand(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
+        super(rand, self).render()
         return str(self.value)
 

@@ -63,5 +63,6 @@ class delimiter(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
+        super(delimiter, self).render()
         return str(self.value)
 

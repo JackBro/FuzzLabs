@@ -342,5 +342,6 @@ class string(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
+        super(string, self).render()
         return str(self.value)
 

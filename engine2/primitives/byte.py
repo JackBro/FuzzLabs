@@ -115,6 +115,7 @@ class byte(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
+        super(byte, self).render()
         if self.format == "binary":
             if self.signed:
                 return struct.pack("b", self.value)

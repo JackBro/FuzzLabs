@@ -1,3 +1,13 @@
+import glob
+import importlib
+
+global_transforms = {}
+for transform in glob.glob("transforms/*.py"):
+    name = transform.split(".")[0].split("/")[1]
+    lname = name.lower()
+    if lname[:2] == "__": continue
+    global_transforms[lname] = importlib.import_module("transforms." + name)
+
 # =============================================================================
 #
 # =============================================================================
@@ -106,17 +116,41 @@ class __primitive__(dict):
                 self[prop.get('name')] = p.value
                 del p
 
+        self.__init_transforms()
+
+        if self.transforms:
+            for transform in self.transforms:
+                if transform.get('apply') == "before":
+                    self.value = global_transforms[transform.get('name')].transform(self)
+
         # First item in library is the original value
         self.library.append(self.value)
 
-       # do not initialize library is primitive is non-fuzzable
         if self.fuzzable:
             self.init_library()
             self.total_mutations = len(self.library)
         else:
             self.complete = True
 
-        # TODO: apply "before" transformations to self.value
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def __init_transforms(self):
+        if self.transforms:
+            for transform in self.transforms:
+                name = transform.get('name')
+                if type(global_transforms[name]).__name__ == "instance":
+                    continue
+                if not name:
+                    raise Exception("transform name missing for primitive %s" %\
+                                    self.type)
+                try:
+                    inst = getattr(global_transforms[name], name)()
+                    global_transforms[name] = inst
+                except Exception, ex:
+                    raise Exception("failed to instantiate transform %s for primitive %s: %s" %\
+                                    (name, self.type, str(ex)))
 
     # -------------------------------------------------------------------------
     #
@@ -198,6 +232,10 @@ class __primitive__(dict):
     # -------------------------------------------------------------------------
 
     def render(self):
+        if self.transforms:
+            for transform in self.transforms:
+                if transform.get('apply') == "after":
+                    self.value = global_transforms[transform.get('name')].transform(self)
+
         return self.value
-        # TODO: apply "after" transformations to self.value
 

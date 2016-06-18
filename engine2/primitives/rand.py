@@ -25,8 +25,20 @@ all_properties = [
     {
         "name": "max_mutations",
         "type": ["int", "long"],
-        "default": 1000,
+        "default": 0,
         "error": "primitive requires max_mutations to be of type int or long"
+    },
+    {
+        "name": "min_value",
+        "type": ["int", "long"],
+        "default": 1000,
+        "error": "primitive requires min_value to be of type int or long"
+    },
+    {
+        "name": "max_value",
+        "type": ["int", "long"],
+        "default": 255,
+        "error": "primitive requires max_value to be of type int or long"
     },
     {
         "name": "format",
@@ -87,7 +99,7 @@ class rand(__primitive__):
         x = []
         times = random.randint(self.min_length, self.max_length) 
         for c in range(0, times):
-            x.append(struct.pack("B", random.randint(0, 255)))
+            x.append(struct.pack("B", random.randint(self.min_value, self.max_value)))
         self.value = ''.join(x)
         self.mutation_index += 1
 

@@ -1,6 +1,4 @@
 from __primitive import __primitive__
-from utils import utils
-import struct
 
 all_properties = [
     {
@@ -51,10 +49,9 @@ class string(__primitive__):
     #
     # -------------------------------------------------------------------------
 
-    def __init__(self, properties, transforms):
+    def __init__(self, properties, parent):
         global all_properties
-        self.type = self.__class__.__name__
-        __primitive__.__init__(self, properties, all_properties, transforms)
+        __primitive__.__init__(self, properties, all_properties, parent)
 
     # -------------------------------------------------------------------------
     #
@@ -100,6 +97,7 @@ class string(__primitive__):
             "\"%n\"" * 500,
             "%s"     * 100,
             "%s"     * 500,
+            "%100s"  * 500,
             "\"%s\"" * 500,
 
             # command injection.
@@ -291,6 +289,7 @@ class string(__primitive__):
         # Add some long strings
         longs = ["A", "B", "1", "2", "3", "<", ">", "'", "\"", "/", "\\", "?",
                  "=", "a=", "&", ".", ",", "(", ")", "]", "[", "%", "*", "-",
+                 "('", "')", "(*", "*)",
                  "_", "+", "{", "}", "%s", "%d", "%n", "\x14", "\xFE", "\xFF"]
 
         for to_long in longs:
@@ -305,13 +304,13 @@ class string(__primitive__):
 
         for item in temp_library:
             v = item
-            if self.max_len:
-                if len(v) > self.max_len:
-                    v = v[:self.max_len]
+            if self.get('max_len'):
+                if len(v) > self.get('max_len'):
+                    v = v[:self.get('max_len')]
 
-            if self.size:
-                if len(v) > self.size: continue
-                v = v + self.padding * (self.size - len(v))
+            if self.get('size'):
+                if len(v) > self.get('size'): continue
+                v = v + self.get('padding') * (self.get('size') - len(v))
 
             if v not in self.library: self.library.append(v)
 
@@ -319,7 +318,7 @@ class string(__primitive__):
     #
     # -------------------------------------------------------------------------
 
-    def add_long_strings (self, sequence):
+    def add_long_strings(self, sequence):
         '''
         Given a sequence, generate a number of selectively chosen strings 
         lengths of the given sequence and add to the string heuristic library.
@@ -343,5 +342,5 @@ class string(__primitive__):
 
     def render(self):
         super(string, self).render()
-        return str(self.value)
+        return self.value
 

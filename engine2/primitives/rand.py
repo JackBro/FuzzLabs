@@ -1,7 +1,7 @@
 from __primitive import __primitive__
 from utils import utils
-import struct
 import random
+import struct
 
 all_properties = [
     {
@@ -13,25 +13,25 @@ all_properties = [
     {
         "name": "min_length",
         "type": ["int", "long"],
-        "default": 0,
+        "default": 1,
         "error": "primitive requires min_length to be of type int or long"
     },
     {
         "name": "max_length",
         "type": ["int", "long"],
-        "default": 0,
+        "default": 100,
         "error": "primitive requires max_length to be of type int or long"
     },
     {
         "name": "max_mutations",
         "type": ["int", "long"],
-        "default": 0,
+        "default": 100,
         "error": "primitive requires max_mutations to be of type int or long"
     },
     {
         "name": "min_value",
         "type": ["int", "long"],
-        "default": 1000,
+        "default": 0,
         "error": "primitive requires min_value to be of type int or long"
     },
     {
@@ -58,8 +58,17 @@ all_properties = [
         "name": "name",
         "type": "str",
         "error": "primitive requires name to be of type str"
+    },
+    {
+        "name": "ignore",
+        "type": "bool",
+        "values": [0, 1],
+        "default": 1,
+        "value": 1,
+        "error": "primitive is either ignored (1) or not (0)"
     }
 ]
+
 
 # =============================================================================
 #
@@ -71,33 +80,21 @@ class rand(__primitive__):
     #
     # -------------------------------------------------------------------------
 
-    def __init__(self, properties, transforms):
+    def __init__(self, properties, parent):
         global all_properties
-        self.type = self.__class__.__name__
-        __primitive__.__init__(self, properties, all_properties, transforms)
-        self.total_mutations = self.max_mutations
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def init_library(self):
-        if self.min_length > self.max_length:
-            raise Exception("%s primitive requires min_length to be less " +\
-                            "than max_length" % self.type)
+        __primitive__.__init__(self, properties, all_properties, parent)
 
     # -------------------------------------------------------------------------
     #
     # -------------------------------------------------------------------------
 
     def mutate(self):
-        if self.mutation_index >= self.total_mutations:
+        if self.mutation_index >= self.max_mutations:
             self.complete = True
-            self.value = self.library[0]
-            return
+            if not self.ignore: return
 
         x = []
-        times = random.randint(self.min_length, self.max_length) 
+        times = random.randint(self.min_length, self.max_length)
         for c in range(0, times):
             x.append(struct.pack("B", random.randint(self.min_value, self.max_value)))
         self.value = ''.join(x)
@@ -108,6 +105,6 @@ class rand(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
-        super(rand, self).render()
+        self.mutate()
         return str(self.value)
 

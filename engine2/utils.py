@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import json
+import uuid
 import importlib
 
 # =============================================================================
@@ -22,6 +23,15 @@ class utils:
         except Exception, ex:
             raise Exception("failed to load packet grammar (%s)" % str(ex))
         return data
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    @staticmethod
+    def read_grammar(filename):
+        data = utils.read_file(filename)
+        return utils.from_json(data)
 
     # -------------------------------------------------------------------------
     #
@@ -50,6 +60,14 @@ class utils:
         '''
 
         return int(binary, 2)
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    @staticmethod
+    def generate_name():
+        return str(uuid.uuid4())
 
     # -------------------------------------------------------------------------
     #

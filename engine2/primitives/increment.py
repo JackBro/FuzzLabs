@@ -6,6 +6,7 @@ all_properties = [
     {
         "name": "value",
         "type": ["int", "long"],
+        "value": 0,
         "mandatory": 1,
         "error": "primitive requires value to be of type long or int"
     },
@@ -33,11 +34,10 @@ class increment(__primitive__):
     #
     # -------------------------------------------------------------------------
 
-    def __init__(self, properties, transforms):
+    def __init__(self, properties, parent):
         global all_properties
-        self.type = self.__class__.__name__
-        __primitive__.__init__(self, properties, all_properties, transforms)
-        self.total_mutations = 0
+        __primitive__.__init__(self, properties, all_properties, parent)
+        self.value -= 2
         self.ignore = True
 
     # -------------------------------------------------------------------------

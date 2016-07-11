@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+from utils import utils
+
 import glob
 import importlib
 
@@ -8,9 +11,9 @@ for transform in glob.glob("transforms/*.py"):
     if lname[:2] == "__": continue
     global_transforms[lname] = importlib.import_module("transforms." + name)
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 #
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 class Property(dict):
     __getattr__ = dict.__getitem__
@@ -78,9 +81,9 @@ class Property(dict):
         if value not in values_list:
             raise Exception('invalid value for property')
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 #
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 class __primitive__(dict):
     __getattr__ = dict.__getitem__
@@ -91,14 +94,21 @@ class __primitive__(dict):
     #
     # -------------------------------------------------------------------------
 
-    def __init__(self, properties, all_properties, transforms = None):
-        self.check_properties(all_properties, properties)
-        self.transforms     = transforms
-        self.rendered       = ""    # rendered value
-        self.complete       = False # flag if this primitive has been completely fuzzed
-        self.library        = []    # library of fuzz heuristics
-        self.mutation_index = 0     # current mutation number
+    def __init__(self, properties, all_properties = None, parent = None):
+        self.parent          = parent
+        self.iter_cnt        = 0
+        self.transforms      = properties.get('transforms')
+        self.rendered        = ""
+        self.complete        = False
+        self.library         = []
+        self.primitives      = []
+        self.mutation_index  = 0
         self.total_mutations = 0
+        self.type            = properties.get('primitive')
+
+        properties = properties.get('properties')
+        if not properties:
+            raise Exception('missing properties for primitive')
 
         # Set up properties that were provided in the grammar
         for prop in properties:
@@ -116,6 +126,9 @@ class __primitive__(dict):
                 self[prop.get('name')] = p.value
                 del p
 
+        if not self.get('name'):
+            self['name'] = utils.generate_name()
+
         self.__init_transforms()
 
         if self.transforms:
@@ -124,9 +137,9 @@ class __primitive__(dict):
                     self.value = global_transforms[transform.get('name')].transform(self)
 
         # First item in library is the original value
-        self.library.append(self.value)
+        if self.get('value'): self.library.append(self.value)
 
-        if self.fuzzable:
+        if self.get('fuzzable'):
             self.init_library()
             self.total_mutations = len(self.library)
         else:
@@ -156,13 +169,6 @@ class __primitive__(dict):
     #
     # -------------------------------------------------------------------------
 
-    def init_library(self):
-        pass
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
     def get_mandatories(self, all_properties):
         props = []
         for property in all_properties:
@@ -184,25 +190,68 @@ class __primitive__(dict):
     #
     # -------------------------------------------------------------------------
 
-    def check_property(self, name, mandatories):
-        props = []
-        for prop in mandatories:
-            props.append(prop)
-        if name in props: return True
-        return False
+    def getParent(self):
+        return self.parent
 
     # -------------------------------------------------------------------------
     #
     # -------------------------------------------------------------------------
 
-    def check_properties(self, all_properties, properties):
-        mandatories = self.get_mandatories(all_properties)
-        props = self.get_properties(properties)
+    def __len__(self):
+        return len(self.primitives)
 
-        for mandatory in mandatories:
-            if mandatory not in props:
-                raise Exception(mandatory +\
-                      ' property is mandatory but missing')
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def __getitem__(self, c):
+        return self.primitives[c]
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def __iter__(self):
+        return self
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def next(self):
+        if self.iter_cnt >= len(self.primitives):
+            self.iter_cnt = 0
+            raise StopIteration
+        else:
+            self.iter_cnt += 1
+            return self.primitives[self.iter_cnt - 1]
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def getRoot(self):
+        root = self.getParent()
+        while root:
+            if not root.getParent(): break
+            root = root.getParent()
+        if not root: root = self
+        return root
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def search(self, name = None, root = None):
+        if self.name == name: return self
+        if self.getParent().name == name: return self.getParent()
+        if not root: root = self.getRoot()
+        if root.name == name: return root
+        for item in root.primitives:
+            if item.name == name: return item
+            if len(item) > 0:
+                v = self.search(name, item)
+                if v != None: return v
 
     # -------------------------------------------------------------------------
     #
@@ -217,7 +266,7 @@ class __primitive__(dict):
     # -------------------------------------------------------------------------
 
     def mutate(self):
-        if self.fuzzable:
+        if self.get('fuzzable'):
             if self.mutation_index > len(self.library) - 1:
                 self.complete = True
                 self.value = self.library[0]
@@ -232,10 +281,18 @@ class __primitive__(dict):
     # -------------------------------------------------------------------------
 
     def render(self):
+        value = self.value
         if self.transforms:
             for transform in self.transforms:
                 if transform.get('apply') == "after":
-                    self.value = global_transforms[transform.get('name')].transform(self)
+                    value = global_transforms[transform.get('name')].transform(self)
 
-        return self.value
+        return value
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def init_library(self):
+        pass
 

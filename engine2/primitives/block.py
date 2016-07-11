@@ -1,6 +1,37 @@
 import glob
 import importlib
-from __primitive import __primitive__
+from logic.Linear import Linear
+from primitives.__primitive import __primitive__
+
+all_properties = [
+    {
+        "name": "fuzzable",
+        "type": "bool",
+        "values": [0, 1],
+        "default": 1,
+        "error": "primitive requires fuzzable to be of type bool (1 or 0)"
+    },
+    {
+        "name": "group",
+        "type": "str",
+        "default": "",
+        "mandatory": 0,
+        "error": "primitive requires group to be of type str"
+    },
+    {
+        "name": "logic",
+        "type": "str",
+        "value": "linear",
+        "default": "linear",
+        "mandatory": 0,
+        "error": "primitive requires logic to be of type str"
+    },
+    {
+        "name": "name",
+        "type": "str",
+        "error": "primitive requires name to be of type str"
+    }
+]
 
 global_logic = {}
 for logic in glob.glob("logic/*.py"):
@@ -9,89 +40,51 @@ for logic in glob.glob("logic/*.py"):
     if lname[:2] == "__": continue
     global_logic[lname] = importlib.import_module("logic." + name)
 
+global_transforms = {}
+for transform in glob.glob("transforms/*.py"):
+    name = transform.split(".")[0].split("/")[1]
+    lname = name.lower()
+    if lname[:2] == "__": continue
+    global_transforms[lname] = importlib.import_module("transforms." + name)
+
 global_primitives = {}
 for primitive in glob.glob("primitives/*.py"):
     name = primitive.split(".")[0].split("/")[1]
     if name[:2] == "__": continue
     global_primitives[name] = importlib.import_module("primitives." + name)
 
-all_properties = []
-
-# =============================================================================
+# -----------------------------------------------------------------------------
 #
-# =============================================================================
+# -----------------------------------------------------------------------------
 
-class block(dict):
-    __getattr__ = dict.__getitem__
-    __setattr__ = dict.__setitem__
-    __delattr__ = dict.__delitem__
+class block(__primitive__):
 
     # -------------------------------------------------------------------------
     #
     # -------------------------------------------------------------------------
 
-    def __init__(self, properties, transforms = None, logic = "linear"):
+    def __init__(self, properties, parent = None):
         global all_properties
-        self.type       = self.__class__.__name__
-        self.properties = properties
-        self.primitives = []
-        self.iter_cnt   = 0
-        self.complete   = False
-        self.domutate   = False
+        __primitive__.__init__(self, properties, all_properties, parent)
+        self.domutate = False
 
-        for primitive in self.properties:
+        for primitive in properties.get('primitives'):
             try:
-                inst = getattr(global_primitives[primitive.get('primitive')], 
+                inst = getattr(global_primitives[primitive.get('primitive')],
                                primitive['primitive'])
-                if primitive.get('primitive') == "block":
-                    inst = inst(primitive.get('properties'),
-                                primitive.get('transforms'), 
-                                primitive.get('logic'))
-                else:
-                    inst = inst(primitive.get('properties'),
-                                primitive.get('transforms'))
+                inst = inst(primitive, self)
                 self.primitives.append(inst)
             except Exception, ex:
                 raise Exception("failed to instantiate primitive %s (%s)" % \
                       (primitive.get('primitive'), str(ex)))
 
-        self.value = "".join(self.do_render(self.primitives))
+        self.logic = getattr(global_logic[self.logic],
+                             self.logic[0].upper() + self.logic[1:])(self)
 
-        self.logic = getattr(global_logic[logic],
-                             logic[0].upper() + logic[1:])(self)
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def __len__(self):
-        return len(self.primitives)
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def __getitem__(self, c):
-        return self.primitives[c]
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def __iter__(self):
-        return self
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def next(self):
-        if self.iter_cnt >= len(self.primitives):
-            self.iter_cnt = 0
-            raise StopIteration
-        else:
-            self.iter_cnt += 1
-            return self.primitives[self.iter_cnt - 1]
+        value = []
+        for p in self.primitives:
+            value.append(p.render())
+        self.value = value
 
     # -------------------------------------------------------------------------
     #
@@ -105,23 +98,10 @@ class block(dict):
     #
     # -------------------------------------------------------------------------
 
-    def do_render(self, items):
-        values = []
-        for item in items:
-            if item.type == 'block':
-                values = values + self.do_render(item)
-            else:
-                values.append(item.render())
-        return values
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
     def render(self):
         if not self.domutate:
             self.complete = False
-            yield "".join(self.do_render(self.primitives))
+            yield "".join(self.value)
         for iteration in self.logic.run():
             yield "".join(iteration)
         self.complete = True

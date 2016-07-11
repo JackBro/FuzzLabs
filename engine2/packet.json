@@ -1,34 +1,118 @@
 {
     "primitive": "block",
-    "logic": "linear",
-    "properties": [
+    "properties": {
+        "name":  "p01",
+        "logic": "linear"
+    },
+    "primitives": [
         {
             "primitive": "increment",
             "properties": {
-                "name":       "incrementing_value",
+                "name":       "i00",
                 "value":      0
             }
         },
         {
             "primitive": "delimiter",
             "properties": {
-                "name":       "incrementing_value",
+                "name":       "d00",
                 "value":      " ",
                 "fuzzable":   0
             }
         },
         {
-            "primitive": "string",
+            "primitive": "rand",
             "properties": {
-                "name":       "string_value",
-                "value":      "test",
-                "max_len":    64,
-                "fuzzable":   1 
+                "name":       "r00",
+                "format":     "ascii",
+                "value":      41,
+                "min_value":  33,
+                "max_value":  126,
+                "min_length":  32,
+                "max_length":  32,
+                "fuzzable":   1
+            }
+        },
+        {
+            "primitive": "delimiter",
+            "properties": {
+                "name":       "d01",
+                "value":      " ",
+                "fuzzable":   0
+            }
+        },
+        {
+            "primitive": "byte",
+            "properties": {
+                "name":       "p02",
+                "signed":     0,
+                "full_range": 1,
+                "format":     "ascii",
+                "value":      0,
+                "fuzzable":   1
+            }
+        },
+        {
+            "primitive": "delimiter",
+            "properties": {
+                "name":       "d02",
+                "value":      " ",
+                "fuzzable":   0
+            }
+        },
+        {
+            "primitive": "sizer",
+            "properties": {
+                "name": "s01",
+                "block": "p03",
+                "format": "ascii",
+                "fuzzable": 0
+            }
+        },
+        {
+            "primitive": "delimiter",
+            "properties": {
+                "name":       "d03",
+                "value":      " ",
+                "fuzzable":   0
+            }
+        },
+        {
+            "primitive": "block",
+            "properties": {
+                "name":   "p03",
+                "logic":  "linear"
             },
-            "transforms": [
+            "primitives": [
                 {
-                    "name": "urlencode",
-                    "apply": "after"
+                    "primitive": "static",
+                    "properties": {
+                        "name":   "p04",
+                        "value":  "TEST"
+                    }
+                },
+                {
+                    "primitive": "delimiter",
+                    "properties": {
+                        "name":       "d04",
+                        "value":      " ",
+                        "fuzzable":   0
+                    }
+                },
+                {
+                    "primitive": "string",
+                    "properties": {
+                        "name":       "p05",
+                        "value":      "hello",
+                        "max_len":    32,
+                        "fuzzable":   1
+                    },
+                    "transforms": [
+                        {
+                            "name": "urlencode",
+                            "apply": "after"
+                        }
+                    ]
                 }
             ]
         }

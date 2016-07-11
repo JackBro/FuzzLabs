@@ -12,7 +12,7 @@ all_properties = [
     {
         "name": "max_num",
         "type": ["int", "long"],
-        "default": 0,
+        "default": 0xFF,
         "error": "primitive requires max_num to be of type int"
     },
     {
@@ -67,10 +67,9 @@ class byte(__primitive__):
     #
     # -------------------------------------------------------------------------
 
-    def __init__(self, properties, transforms):
+    def __init__(self, properties, parent):
         global all_properties
-        self.type = self.__class__.__name__
-        __primitive__.__init__(self, properties, all_properties, transforms)
+        __primitive__.__init__(self, properties, all_properties, parent)
 
     # -------------------------------------------------------------------------
     #
@@ -87,7 +86,7 @@ class byte(__primitive__):
             self.max_num = max
 
         if self.full_range:
-            for i in xrange(0, self.max_num):
+            for i in xrange(0, self.max_num + 1):
                 if i not in self.library: self.library.append(i)
         else:
             self.library += utils.integer_boundaries(
@@ -115,11 +114,11 @@ class byte(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
-        super(byte, self).render()
+        value = super(byte, self).render()
         if self.format == "binary":
             if self.signed:
-                return struct.pack("b", self.value)
+                return struct.pack("b", value)
             else:
-                return struct.pack("B", self.value)
-        return str(self.value)
+                return struct.pack("B", value)
+        return str(value)
 

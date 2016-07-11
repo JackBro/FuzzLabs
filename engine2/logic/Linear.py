@@ -43,6 +43,6 @@ class Linear:
                             r = self.root[item_position].render().next()
                         data = self.base()
                         data[item_position] = r
-                        yield "".join(data)
+                        yield data
                 self.position += 1
 

@@ -1,6 +1,4 @@
 from __primitive import __primitive__
-from utils import utils
-import struct
 
 all_properties = [
     {
@@ -33,10 +31,10 @@ class delimiter(__primitive__):
     #
     # -------------------------------------------------------------------------
 
-    def __init__(self, properties, transforms):
+    def __init__(self, properties, parent):
         global all_properties
         self.type = self.__class__.__name__
-        __primitive__.__init__(self, properties, all_properties, transforms)
+        __primitive__.__init__(self, properties, all_properties, parent)
 
     # -------------------------------------------------------------------------
     #

@@ -12,7 +12,7 @@ all_properties = [
     {
         "name": "max_num",
         "type": ["int", "long"],
-        "default": 0,
+        "default": 0xFFFFFFFFFFFFFFFF,
         "error": "primitive requires max_num to be of type int"
     },
     {
@@ -67,10 +67,10 @@ class qword(__primitive__):
     #
     # -------------------------------------------------------------------------
 
-    def __init__(self, properties, transforms):
+    def __init__(self, properties, parent):
         global all_properties
         self.type = self.__class__.__name__
-        __primitive__.__init__(self, properties, all_properties, transforms)
+        __primitive__.__init__(self, properties, all_properties, parent)
 
     # -------------------------------------------------------------------------
     #
@@ -87,7 +87,7 @@ class qword(__primitive__):
             self.max_num = max
 
         if self.full_range:
-            for i in xrange(0, self.max_num):
+            for i in xrange(0, self.max_num + 1):
                 if i not in self.library: self.library.append(i)
         else:
             self.library += utils.integer_boundaries(
@@ -115,14 +115,14 @@ class qword(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
-        super(qword, self).render()
+        value = super(qword, self).render()
+        endian = ">"
+        if self.get('endian') == "little":
+            endian = "<"
         if self.format == "binary":
-            try:
-                if self.signed:
-                    return struct.pack("q", self.value)
-                else:
-                    return struct.pack("Q", self.value)
-            except Exception, ex:
-                raise Exception(str(ex) + " - value: %d" % self.value)
-        return str(self.value)
+            if self.signed:
+                return struct.pack(endian + "q", value)
+            else:
+                return struct.pack(endian + "Q", value)
+        return str(value)
 

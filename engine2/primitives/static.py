@@ -1,6 +1,4 @@
-from __primitive import __primitive__
-from utils import utils
-import struct
+from primitives.__primitive import __primitive__
 
 all_properties = [
     {
@@ -23,9 +21,9 @@ all_properties = [
     }
 ]
 
-# =============================================================================
+# -----------------------------------------------------------------------------
 #
-# =============================================================================
+# -----------------------------------------------------------------------------
 
 class static(__primitive__):
 
@@ -33,10 +31,9 @@ class static(__primitive__):
     #
     # -------------------------------------------------------------------------
 
-    def __init__(self, properties, transforms):
+    def __init__(self, properties, parent = None):
         global all_properties
-        self.type = self.__class__.__name__
-        __primitive__.__init__(self, properties, all_properties, transforms)
+        __primitive__.__init__(self, properties, all_properties, parent)
 
     # -------------------------------------------------------------------------
     #

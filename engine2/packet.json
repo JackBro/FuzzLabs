@@ -6,58 +6,18 @@
     },
     "primitives": [
         {
-            "primitive": "increment",
-            "properties": {
-                "name":       "i00",
-                "value":      0
-            }
-        },
-        {
-            "primitive": "delimiter",
-            "properties": {
-                "name":       "d00",
-                "value":      " ",
-                "fuzzable":   0
-            }
-        },
-        {
-            "primitive": "rand",
-            "properties": {
-                "name":       "r00",
-                "format":     "ascii",
-                "value":      41,
-                "min_value":  33,
-                "max_value":  126,
-                "min_length":  32,
-                "max_length":  32,
-                "fuzzable":   1
-            }
-        },
-        {
-            "primitive": "delimiter",
-            "properties": {
-                "name":       "d01",
-                "value":      " ",
-                "fuzzable":   0
-            }
-        },
-        {
             "primitive": "byte",
             "properties": {
-                "name":       "p02",
-                "signed":     0,
-                "full_range": 1,
-                "format":     "ascii",
-                "value":      0,
-                "fuzzable":   1
+                "name": "byte01",
+                "format": "ascii",
+                "value": 0
             }
         },
         {
             "primitive": "delimiter",
             "properties": {
-                "name":       "d02",
-                "value":      " ",
-                "fuzzable":   0
+                "name":   "d00",
+                "value":  " "
             }
         },
         {
@@ -72,9 +32,8 @@
         {
             "primitive": "delimiter",
             "properties": {
-                "name":       "d03",
-                "value":      " ",
-                "fuzzable":   0
+                "name":   "d01",
+                "value":  " "
             }
         },
         {
@@ -85,26 +44,11 @@
             },
             "primitives": [
                 {
-                    "primitive": "static",
-                    "properties": {
-                        "name":   "p04",
-                        "value":  "TEST"
-                    }
-                },
-                {
-                    "primitive": "delimiter",
-                    "properties": {
-                        "name":       "d04",
-                        "value":      " ",
-                        "fuzzable":   0
-                    }
-                },
-                {
                     "primitive": "string",
                     "properties": {
                         "name":       "p05",
                         "value":      "hello",
-                        "max_len":    32,
+                        "max_len":    64,
                         "fuzzable":   1
                     },
                     "transforms": [

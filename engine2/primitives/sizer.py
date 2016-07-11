@@ -80,9 +80,42 @@ class sizer(__primitive__):
     #
     # -------------------------------------------------------------------------
 
+    def init_library(self):
+        bitw = self.get('size') * 8
+        max = utils.bin_to_dec("1" + "0" * bitw)
+        if self.signed:
+            max = utils.bin_to_dec("1" + "0" * bitw) / 2 - 1
+
+        if self.max_num and self.max_num > max:
+            raise Exception("%s primitive maximum value is %d" % (self.type, max))
+        if self.max_num == None or self.max_num == 0:
+            self.max_num = max
+
+        if self.full_range:
+            for i in xrange(0, self.max_num + 1):
+                if i not in self.library: self.library.append(i)
+        else:
+            self.library += utils.integer_boundaries(
+                self.library,
+                self.max_num,
+                0)
+            self.library += utils.integer_boundaries(
+                self.library,
+                self.max_num,
+                self.max_num)
+            for v in [2, 3, 4, 8, 16, 32]:
+                self.library += utils.integer_boundaries(
+                    self.library,
+                    self.max_num,
+                    self.max_num / v)
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
     def render(self):
         b = self.search(self.block)
-        length = len(b.render().next())
+        length = len(b.render())
         if self.get('inclusive'): length += self.get('size')
         if self.get('offset'): length += self.get('offset')
 

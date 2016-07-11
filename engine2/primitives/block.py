@@ -91,18 +91,12 @@ class block(__primitive__):
     # -------------------------------------------------------------------------
 
     def mutate(self):
-        self.domutate = True
-        return self.domutate
+        self.value = self.logic.run().next()
 
     # -------------------------------------------------------------------------
     #
     # -------------------------------------------------------------------------
 
     def render(self):
-        if not self.domutate:
-            self.complete = False
-            yield "".join(self.value)
-        for iteration in self.logic.run():
-            yield "".join(iteration)
-        self.complete = True
+        return "".join(self.value)
 

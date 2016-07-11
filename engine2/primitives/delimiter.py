@@ -11,7 +11,7 @@ all_properties = [
         "name": "fuzzable",
         "type": "bool",
         "values": [0, 1],
-        "default": 1,
+        "default": 0,
         "error": "primitive requires fuzzable to be of type bool (1 or 0)"
     },
     {

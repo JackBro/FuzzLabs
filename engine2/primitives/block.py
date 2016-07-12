@@ -91,7 +91,12 @@ class block(__primitive__):
     # -------------------------------------------------------------------------
 
     def mutate(self):
-        self.value = self.logic.run().next()
+        value = self.logic.run().next()
+        if value == None:
+            self.complete = True
+            self.value = self.render()
+        else:
+            self.value = value
 
     # -------------------------------------------------------------------------
     #

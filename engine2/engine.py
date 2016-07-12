@@ -11,5 +11,6 @@ grammar = utils.read_grammar("./packet.json")
 grammar = block(grammar)
 
 for iteration in Linear(grammar).run():
-    print "".join(iteration)
+    if iteration:
+        print "".join(iteration)
 

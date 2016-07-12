@@ -45,4 +45,5 @@ class Linear:
                         data[item_position] = r
                         yield data
                 self.position += 1
+        yield None
 

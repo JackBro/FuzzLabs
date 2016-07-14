@@ -38,9 +38,6 @@ class Property(dict):
                                        prop_desc.get('values'))
         self.value = prop_value
 
-        self.total_mutations = None
-        self.mutation_index  = None
-
     # -------------------------------------------------------------------------
     #
     # -------------------------------------------------------------------------

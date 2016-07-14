@@ -44,6 +44,16 @@
                     ]
                 }
             ]
+        },
+        {
+            "primitive": "hash",
+            "properties": {
+                "name": "h01",
+                "block": "p03",
+                "endian": "big",
+                "type": "sha1",
+                "format": "ascii"
+            }
         }
     ]
 }

@@ -3,6 +3,7 @@
 *.pyc
 *.session
 *.db
+.DS_Store
 webserver/etc/ssl
 webserver/static/resources/javascript/bower
 agents/FuzzlabsAgentLinux/dist

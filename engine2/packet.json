@@ -6,53 +6,14 @@
     },
     "primitives": [
         {
-            "primitive": "sizer",
-            "properties": {
-                "name": "s01",
-                "block": "p03",
-                "format": "ascii",
-                "fuzzable": 0
-            }
-        },
-        {
-            "primitive": "delimiter",
-            "properties": {
-                "name":   "d01",
-                "value":  " "
-            }
-        },
-        {
-            "primitive": "block",
-            "properties": {
-                "name":   "p03",
-                "logic":  "linear"
-            },
-            "primitives": [
-                {
-                    "primitive": "string",
-                    "properties": {
-                        "name":       "p05",
-                        "value":      "hello",
-                        "max_len":    64,
-                        "fuzzable":   1
-                    },
-                    "transforms": [
-                        {
-                            "name": "urlencode",
-                            "apply": "after"
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "primitive": "hash",
+            "primitive": "binary",
             "properties": {
                 "name": "h01",
-                "block": "p03",
-                "endian": "big",
-                "type": "sha1",
-                "format": "ascii"
+                "value": [
+                    65, 65, 65, 65,
+                    65, 65, 65, 65
+                ],
+                "fuzzable": 1
             }
         }
     ]

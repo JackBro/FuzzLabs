@@ -1,0 +1,20 @@
+{
+    "primitive": "block",
+    "properties": {
+        "name":  "p01",
+        "logic": "linear"
+    },
+    "primitives": [
+        {
+            "primitive": "binary",
+            "properties": {
+                "name": "h01",
+                "value": [
+                    65, 65, 65, 65,
+                    65, 65, 65, 65
+                ],
+                "fuzzable": 1
+            }
+        }
+    ]
+}

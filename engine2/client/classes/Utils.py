@@ -8,7 +8,7 @@ import importlib
 #
 # =============================================================================
 
-class utils:
+class Utils:
 
     # -------------------------------------------------------------------------
     #
@@ -29,9 +29,17 @@ class utils:
     # -------------------------------------------------------------------------
 
     @staticmethod
+    def read_json(filename):
+        data = Utils.read_file(filename)
+        return Utils.from_json(data)
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    @staticmethod
     def read_grammar(filename):
-        data = utils.read_file(filename)
-        return utils.from_json(data)
+        return Utils.read_grammar(filename)
 
     # -------------------------------------------------------------------------
     #
@@ -88,4 +96,20 @@ class utils:
             if case in library: continue
             ilist.append(case)
         return ilist
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    @staticmethod
+    def save_file(filename, content, tojson = True):
+        try:
+            with open(filename, 'w') as f:
+                if tojson:
+                    content = json.dumps(content)
+                f.write(content)
+        except Exception, ex:
+            raise Exception("failed to write file: %s (%s)" %\
+                           (filename, str(ex)))
+        return True
 

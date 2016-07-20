@@ -8,6 +8,7 @@ from flask_restful import Api
 from classes.Config import Config
 from classes.ResourceInitAcl import ResourceInitAcl
 from classes.ResourceInitAPIKey import ResourceInitAPIKey
+from classes.ResourceSetupSsl import ResourceSetupSsl
 from classes.ResourcePing import ResourcePing
 from classes.ResourceShutdown import ResourceShutdown
 from classes.ResourceRemove import ResourceRemove
@@ -24,6 +25,9 @@ api = Api(app)
 
 api.add_resource(ResourceInitAcl,
                  '/setup/acl',
+                 resource_class_kwargs=config)
+api.add_resource(ResourceSetupSsl,
+                 '/setup/ssl',
                  resource_class_kwargs=config)
 api.add_resource(ResourceInitAPIKey,
                  '/setup/apikey',

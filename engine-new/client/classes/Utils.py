@@ -21,7 +21,7 @@ class Utils:
             with open(filename, 'r') as f:
                 data = f.read()
         except Exception, ex:
-            raise Exception("failed to load packet grammar (%s)" % str(ex))
+            raise Exception("failed to load file (%s)" % str(ex))
         return data
 
     # -------------------------------------------------------------------------

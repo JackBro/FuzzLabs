@@ -3,6 +3,7 @@ import cmd
 import sys
 import json
 import pprint
+import base64
 import inspect
 import httplib
 
@@ -63,7 +64,7 @@ class CliConfigEngine(cmd.Cmd):
         try:
             conn.request(robject.get('method'),
                          robject.get('uri'),
-                         robject.get('data'),
+                         json.dumps(robject.get('data')),
                          headers)
             res = conn.getresponse()
         except Exception, ex:
@@ -409,12 +410,49 @@ class CliConfigEngine(cmd.Cmd):
             if not self.check_local_certificates():
                 if not self.create_local_certificates():
                     return
-
+            # Not sure if I want to have CA cert and sign each cert with 
+            # that. Probably would make things simpler, but... will see.
             self.create_engine_certificates(args[1])
-            # TODO:
-            #  2. Store engine cert locally
-            #  3. Register engine cert in local config
-            #  4. Transfer engine cert and key to engine
+
+            cert_root = self.config.get('root') + "/config/certificates/"
+            ccf = cert_root + self.config.get('data').get('security').get('ssl').get('certificate_file')
+            cf = cert_root + args[1] + ".crt"
+            kf = cert_root + args[1] + ".key"
+
+            try:
+                client = Utils.read_file(ccf)
+                cert = Utils.read_file(cf)
+                key = Utils.read_file(kf)
+            except Exception, ex:
+                print "[e] failed to read certificates: %s" % str(ex)
+                return
+
+            # read in certs, base64 and include
+            r_object_data = {
+                "client": base64.b64encode(client),
+                "cert": base64.b64encode(cert),
+                "key": base64.b64encode(key) 
+            }
+
+            r_object = {
+                "method": "POST",
+                "uri": "/setup/ssl?apikey=" + engine.get('apikey'),
+                "data": r_object_data
+            }
+
+            rc = self.engine_request(engine.get('address'),
+                                     engine.get('port'),
+                                     r_object)
+            if not rc:
+                print "[e] certificate distribution failed"
+                return
+            sc = rc.get('status')
+            if sc != 200:
+                print "[e] certificate distribution failed: %s" % rc.get('data').get('message')
+                return
+
+            os.unlink(kf)
+
         elif args[0] == "disable":
             # TODO:
             #  1. send ssl disable request to engine

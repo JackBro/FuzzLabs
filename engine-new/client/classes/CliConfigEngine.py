@@ -5,6 +5,12 @@ import json
 import pprint
 import inspect
 import httplib
+
+from OpenSSL import crypto, SSL
+from socket import gethostname
+from time import gmtime, mktime
+from os.path import exists, join
+
 from classes.Utils import Utils
 from classes.State import State
 from classes.Job import Job
@@ -269,4 +275,161 @@ class CliConfigEngine(cmd.Cmd):
               "           over the engine.\n" +\
               "terminate: same as abandon, but instead of leaving the engine running\n" +\
               "           it will be completely shut down.\n"
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def check_local_certificates(self):
+        has_certs = True
+        if not self.config.get('data').get('security'):
+            self.config.get('data')['security'] = {}
+            has_certs = False
+
+        if not self.config.get('data').get('security').get('ssl'):
+            self.config.get('data').get('security')['ssl'] = {}
+            has_certs = False
+
+        if not self.config.get('data').get('security').get('ssl').get('certificate_file'):
+            self.config.get('data').get('security').get('ssl')['certificate_file'] = "client.crt"
+            has_certs = False
+
+        if not self.config.get('data').get('security').get('ssl').get('key_file'):
+            self.config.get('data').get('security').get('ssl')['certificate_file'] = "client.key"
+            has_certs = False
+
+        if not self.config.get('root'):
+            print "[e] could not determine FuzzLabs client root path, aborting."
+            return
+
+        cf = self.config.get('root') + "/config/certificates/" +\
+             self.config.get('data').get('security').get('ssl').get('certificate_file')
+
+        kf = self.config.get('root') + "/config/certificates/" +\
+             self.config.get('data').get('security').get('ssl').get('key_file')
+
+        self.config.save()
+
+        if not exists(cf) or not exists(kf):
+            has_certs = False
+        return has_certs
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def create_certificate(self, engine_id, cf, kf):
+        k = crypto.PKey()
+        k.generate_key(crypto.TYPE_RSA, 2048)
+
+        c = crypto.X509()
+        c.get_subject().C = "UK"
+        c.get_subject().ST = "London"
+        c.get_subject().L = "London"
+        c.get_subject().O = "DCNWS"
+        c.get_subject().OU = "DCNWS"
+        c.get_subject().CN = engine_id
+        c.set_serial_number(1000)
+        c.gmtime_adj_notBefore(0)
+        c.gmtime_adj_notAfter(10*365*24*60*60)
+        c.set_issuer(c.get_subject())
+        c.set_pubkey(k)
+        c.sign(k, 'sha1')
+
+        try:
+            open(cf, 'w').write(
+                crypto.dump_certificate(crypto.FILETYPE_PEM, c))
+            open(kf, 'w').write(
+                crypto.dump_privatekey(crypto.FILETYPE_PEM, k))
+        except Exception, ex:
+            print "[e] failed to create local key file: %s" % str(ex)
+            return False
+
+        return True
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def create_local_certificates(self):
+        cf = self.config.get('root') + "/config/certificates/" +\
+             self.config.get('data').get('security').get('ssl').get('certificate_file')
+
+        kf = self.config.get('root') + "/config/certificates/" +\
+             self.config.get('data').get('security').get('ssl').get('key_file')
+
+        eid = self.config.get('data').get('security').get('ssl').get('certificate_file')
+        eid = eid.split(".")[0]
+        self.create_certificate(eid, cf, kf)
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def create_engine_certificates(self, engine_id):
+        cert_root = self.config.get('root') + "/config/certificates/"
+        cf = cert_root + engine_id + ".crt"
+        kf = cert_root + engine_id + ".key"
+        if not self.create_certificate(engine_id, cf, kf):
+            print "[e] failed to generate certificate for engine '%s'" % engine_id
+            return False
+
+        try:
+            engine = self.config.get('data').get('engines').get(engine_id)
+            self.config.get('data').get('engines').get(engine_id)['ssl'] = 1
+            self.config.get('data').get('engines').get(engine_id)['certificate_file'] = cf
+        except Exception, ex:
+            print "[e] failed to save SSL configuration for engine '%s'" % engine_id
+            return False
+
+        self.config.save()
+        return True
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def do_ssl(self, args):
+        args = args.split(" ")
+        if len(args) != 2:
+            print "[e] syntax error"
+            return
+        engines = self.config.get('data').get('engines')
+        if not engines or len(list(engines)) == 0:
+            print "[i] no engines registered"
+            return
+        engine = engines.get(args[1])
+        if not engine:
+            print "[i] no engine registered with id '%s'" % args[1]
+            return
+
+        uri = None
+        if args[0] == "enable":
+            # Make sure we got our local cert and key
+            if not self.check_local_certificates():
+                if not self.create_local_certificates():
+                    return
+
+            self.create_engine_certificates(args[1])
+            # TODO:
+            #  2. Store engine cert locally
+            #  3. Register engine cert in local config
+            #  4. Transfer engine cert and key to engine
+        elif args[0] == "disable":
+            # TODO:
+            #  1. send ssl disable request to engine
+            #  2. if returns 'success', remove engine cert from local config
+            #  3. delete local copy of engine cert
+            pass
+        else:
+            print "[e] invalid option '%s'" % args[0]
+            return
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def help_ssl(self):
+        print "\nEnable or disable SSL for a given engine connection..\n\n" +\
+              "Syntax: ssl [ enable | disable ] <engine id>\n"
 

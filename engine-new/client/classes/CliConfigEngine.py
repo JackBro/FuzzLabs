@@ -296,7 +296,7 @@ class CliConfigEngine(cmd.Cmd):
             has_certs = False
 
         if not self.config.get('data').get('security').get('ssl').get('key_file'):
-            self.config.get('data').get('security').get('ssl')['certificate_file'] = "client.key"
+            self.config.get('data').get('security').get('ssl')['key_file'] = "client.key"
             has_certs = False
 
         if not self.config.get('root'):
@@ -409,11 +409,11 @@ class CliConfigEngine(cmd.Cmd):
             # Make sure we got our local cert and key
             if not self.check_local_certificates():
                 if not self.create_local_certificates():
+                    print "[e] failed to create certificates"
                     return
             # Not sure if I want to have CA cert and sign each cert with 
             # that. Probably would make things simpler, but... will see.
             self.create_engine_certificates(args[1])
-
             cert_root = self.config.get('root') + "/config/certificates/"
             ccf = cert_root + self.config.get('data').get('security').get('ssl').get('certificate_file')
             cf = cert_root + args[1] + ".crt"

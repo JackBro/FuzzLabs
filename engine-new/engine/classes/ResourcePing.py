@@ -18,8 +18,17 @@ class ResourcePing(Resource):
         allow  = self.config.get('data').get('security').get('allow')
         apikey = self.config.get('data').get('security').get('apikey')
 
-        if not allow or len(allow) == 0 or client not in allow:
-            abort(403, message="access denied")
+        allow = self.config.get('data')['security'].get('allow')
+        if not allow:
+            abort(500, message="invalid configuration")
+        allowed = False
+        if allow:
+            allowed = False
+            for c in allow:
+                if c.get('address') and c.get('address') == request.remote_addr:
+                    allowed = True
+        if not allowed:
+            abort(403, message="access blocked due to ACL")
 
         if not args.get('apikey') or args.get('apikey') != apikey:
             abort(401, message="access denied")

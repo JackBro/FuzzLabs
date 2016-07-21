@@ -39,7 +39,9 @@ class ResourceInitAcl(Resource):
         if len(allow) > 0:
             abort(403, message="ACL already initialized")
 
-        self.config.get('data')['security']['allow'].append(client)
+        self.config.get('data')['security']['allow'].append({
+            "address": client
+        })
 
         # Save changes
 

@@ -34,7 +34,13 @@ class ResourceInitAPIKey(Resource):
         allow = self.config.get('data')['security'].get('allow')
         if not allow:
             abort(500, message="invalid configuration")
-        if allow and request.remote_addr not in allow:
+        allowed = False
+        if allow:
+            allowed = False
+            for c in allow:
+                if c.get('address') and c.get('address') == request.remote_addr:
+                    allowed = True
+        if not allowed:
             abort(403, message="access blocked due to ACL")
 
         # Check API key. If there is one set we return error here.

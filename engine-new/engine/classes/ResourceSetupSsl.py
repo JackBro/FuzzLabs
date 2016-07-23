@@ -110,7 +110,6 @@ class ResourceSetupSsl(Resource):
         if False in rc:
             abort(400, message="failed to set up certificates")
 
-        # TODO: set ssl to 1 in security config
         cert_root = self.root + "/config/certificates/"
         self.config.get('data').get('security')['ssl'] = {}
         self.config.get('data').get('security').get('ssl')['enabled'] = 1
@@ -120,10 +119,12 @@ class ResourceSetupSsl(Resource):
             if acle.get('address') and acle.get('address') == request.remote_addr:
                 acle['certificate'] = cert_root + request.remote_addr + ".crt"
 
-        # Save changes
-
         Utils.save_file(self.root + "/config/config.json",
                         self.config.get('data'))
+
+        open("/tmp/.flenginerestart", "w").write("restart")
+        func = request.environ.get('werkzeug.server.shutdown')
+        func()
 
         return {"message": "success"}, 200
 

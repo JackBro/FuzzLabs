@@ -52,38 +52,6 @@ class CliConfigEngine(cmd.Cmd):
     #
     # -------------------------------------------------------------------------
 
-    def engine_request(self, address, port, robject):
-        res = None
-        headers = {}
-        if robject.get('method') in ["PUT", "POST"]:
-            headers = {
-                "Content-Type": "application/json"
-            }
-
-        conn = httplib.HTTPConnection(address, port, True, 5)
-        try:
-            conn.request(robject.get('method'),
-                         robject.get('uri'),
-                         json.dumps(robject.get('data')),
-                         headers)
-            res = conn.getresponse()
-        except Exception, ex:
-            print "[e] failed to contact engine at %s:%d: %s" %\
-                  (address, port, str(ex))
-            return False
-        callback = robject.get('callback')
-        data = json.loads(res.read())
-        if callback: callback(res.status, res.reason, data,
-                              {"address": address, "port": port})
-        return {
-            "status": res.status,
-            "data": data
-        }
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
     def callback_acl_init(self, status, reason, data, engine):
         if (status != 200):
             print "[e] failed to add engine: %s" % data.get('message')
@@ -138,7 +106,11 @@ class CliConfigEngine(cmd.Cmd):
                 return
 
         for robject in initialization:
-            rc = self.engine_request(address, port, robject).get('status')
+            rc = Utils.engine_request(self.config,
+                                     address,
+                                     port,
+                                     robject,
+                                     None).get('status')
             if rc != 200: break
 
     # -------------------------------------------------------------------------
@@ -171,21 +143,24 @@ class CliConfigEngine(cmd.Cmd):
             status = "unknown"
             engine_data = self.config.get('data').get('engines')[engine]
 
-            rc = self.engine_request(engine_data['address'],
+            rc = Utils.engine_request(self.config,
+                                     engine_data['address'],
                                      engine_data['port'], 
             {
                 "method": "GET",
                 "uri": "/management/ping?apikey=" + engine_data['apikey'],
                 "data": None
-            })
+            }, engine)
             if rc:
                 if rc.get('status') == 200 and \
                    rc.get('data').get('message') == "pong":
                     status = "active"
 
+            ssls = "Yes" if engine_data.get('ssl') == 1 else "No"
             print "id: " + engine
             print "  %-10s: %-40s" % ("Address", engine_data['address'])
             print "  %-10s: %-40s" % ("Port", str(engine_data['port']))
+            print "  %-10s: %-40s" % ("SSL", ssls)
             print "  %-10s: %-40s" % ("Api key", str(engine_data['apikey']))
             print "  %-10s: %-40s" % ("Status", status)
             print
@@ -204,13 +179,14 @@ class CliConfigEngine(cmd.Cmd):
             print "[i] no engine registered with id '%s'" % args
             return
 
-        rc = self.engine_request(engine['address'],
+        rc = Utils.engine_request(self.config,
+                                 engine['address'],
                                  engine['port'],
         {
             "method": "GET",
             "uri": "/management/shutdown?apikey=" + engine['apikey'],
             "data": None
-        })
+        }, engine)
         if rc:
             if rc.get('status') == 200:
                 print "[i] engine shut down"
@@ -250,13 +226,14 @@ class CliConfigEngine(cmd.Cmd):
             print "[e] invalid option '%s'" % args[0]
             return
 
-        rc = self.engine_request(engine['address'],
+        rc = Utils.engine_request(self.config,
+                                 engine['address'],
                                  engine['port'],
         {
             "method": "GET",
             "uri": uri,
             "data": None
-        })
+        }, engine)
         if rc:
             if rc.get('status') == 200:
                 self.config.get('data').get('engines').pop(args[1])
@@ -440,9 +417,11 @@ class CliConfigEngine(cmd.Cmd):
                 "data": r_object_data
             }
 
-            rc = self.engine_request(engine.get('address'),
+            rc = Utils.engine_request(self.config,
+                                     engine.get('address'),
                                      engine.get('port'),
-                                     r_object)
+                                     r_object,
+                                     args[1])
             if not rc:
                 print "[e] certificate distribution failed"
                 return

@@ -3,8 +3,10 @@
 
 import os
 import inspect
+from OpenSSL import SSL
 from flask import Flask
 from flask_restful import Api
+from classes.Utils import Utils
 from classes.Config import Config
 from classes.ResourceInitAcl import ResourceInitAcl
 from classes.ResourceInitAPIKey import ResourceInitAPIKey
@@ -42,8 +44,41 @@ api.add_resource(ResourceRemove,
                  '/management/remove',
                  resource_class_kwargs=config)
 
-if __name__ == '__main__':
+def start_engine():
+    context = None
+    try:
+        os.unlink("/tmp/.flenginerestart")
+    except Exception, ex:
+        pass
+
+    try:
+        if config.get('data').get('security').get('ssl').get('enabled') == 1:
+            k = config.get('data').get('security').get('ssl').get('key')
+            c = config.get('data').get('security').get('ssl').get('certificate')
+            context = (c, k)
+    except Exception, ex:
+        print "[e] failed to set up SSL context"
+        pass
+
     app.run(host=config.get('data').get('general').get('bind'),
             port=config.get('data').get('general').get('port'),
-            debug=False)
+            debug=False,
+            ssl_context=context)
+
+    # Check if we have to restart. This custom restart is needed to
+    # switch from HTTP to HTTPS once configured.
+
+    r = None
+    restart = False
+    try:
+        r = Utils.read_file("/tmp/.flenginerestart")
+    except Exception, ex:
+        pass
+    if r and r == "restart": restart = True
+    return restart
+
+if __name__ == '__main__':
+    rc = start_engine()
+    while rc:
+        rc = start_engine()
 

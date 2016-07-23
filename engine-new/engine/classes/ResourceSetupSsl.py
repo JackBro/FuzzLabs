@@ -6,9 +6,10 @@ from classes.Utils import Utils
 
 parser = reqparse.RequestParser()
 parser.add_argument('apikey', type=str, location='args')
+parser.add_argument('enable', type=int, location='args')
 parser.add_argument("client", type=str, help="client certificate")
-parser.add_argument("cert", type=str, help="engine certificate")
-parser.add_argument("key", type=str, help="engine certificate key")
+parser.add_argument("cert",   type=str, help="engine certificate")
+parser.add_argument("key",    type=str, help="engine certificate key")
 
 # -----------------------------------------------------------------------------
 #
@@ -82,49 +83,60 @@ class ResourceSetupSsl(Resource):
 
     def post(self):
         self.check_access()
-
-        client = None
-        cert   = None
-        key    = None
-
         args = parser.parse_args(strict=True)
-        if not args.get('cert') or not args.get('key') or\
-           not args.get('client'):
-            abort(400, message="invalid payload")
 
-        try:
-            client = base64.b64decode(args.get('client'))
-            cert   = base64.b64decode(args.get('cert'))
-            key    = base64.b64decode(args.get('key'))
-        except Exception, ex:
-            abort(400, message="failed to decode payload: " % str(ex))
+        if args.get('enable') == 0:
+            cert_root = self.root + "/config/certificates/"
+            self.config.get('data').get('security').get('ssl')['enabled'] = 0
+            Utils.save_file(self.root + "/config/config.json",
+                            self.config.get('data'))
+            open("/tmp/.flenginerestart", "w").write("restart")
+            func = request.environ.get('werkzeug.server.shutdown')
+            func()
+        elif args.get('enable') == 1:
+            client = None
+            cert   = None
+            key    = None
 
-        rc = []
-        try:
-            rc.append(self.save_certificate(request.remote_addr, "client", client))
-            rc.append(self.save_certificate(request.remote_addr, "cert", cert))
-            rc.append(self.save_certificate(request.remote_addr, "key", key))
-        except Exception, ex:
-            abort(400, message="failed to set up certificates: " % str(ex))
+            if not args.get('cert') or not args.get('key') or\
+                not args.get('client'):
+                abort(400, message="invalid payload")
 
-        if False in rc:
-            abort(400, message="failed to set up certificates")
+            try:
+                client = base64.b64decode(args.get('client'))
+                cert   = base64.b64decode(args.get('cert'))
+                key    = base64.b64decode(args.get('key'))
+            except Exception, ex:
+                abort(400, message="failed to decode payload: " % str(ex))
 
-        cert_root = self.root + "/config/certificates/"
-        self.config.get('data').get('security')['ssl'] = {}
-        self.config.get('data').get('security').get('ssl')['enabled'] = 1
-        self.config.get('data').get('security').get('ssl')['certificate'] = cert_root + "engine.crt"
-        self.config.get('data').get('security').get('ssl')['key'] = cert_root + "engine.key"
-        for acle in self.config.get('data').get('security').get('allow'):
-            if acle.get('address') and acle.get('address') == request.remote_addr:
-                acle['certificate'] = cert_root + request.remote_addr + ".crt"
+            rc = []
+            try:
+                rc.append(self.save_certificate(request.remote_addr, "client", client))
+                rc.append(self.save_certificate(request.remote_addr, "cert", cert))
+                rc.append(self.save_certificate(request.remote_addr, "key", key))
+            except Exception, ex:
+                abort(400, message="failed to set up certificates: " % str(ex))
 
-        Utils.save_file(self.root + "/config/config.json",
-                        self.config.get('data'))
+            if False in rc:
+                abort(400, message="failed to set up certificates")
 
-        open("/tmp/.flenginerestart", "w").write("restart")
-        func = request.environ.get('werkzeug.server.shutdown')
-        func()
+            cert_root = self.root + "/config/certificates/"
+            self.config.get('data').get('security')['ssl'] = {}
+            self.config.get('data').get('security').get('ssl')['enabled'] = 1
+            self.config.get('data').get('security').get('ssl')['certificate'] = cert_root + "engine.crt"
+            self.config.get('data').get('security').get('ssl')['key'] = cert_root + "engine.key"
+            for acle in self.config.get('data').get('security').get('allow'):
+                if acle.get('address') and acle.get('address') == request.remote_addr:
+                    acle['certificate'] = cert_root + request.remote_addr + ".crt"
+
+            Utils.save_file(self.root + "/config/config.json",
+                            self.config.get('data'))
+
+            open("/tmp/.flenginerestart", "w").write("restart")
+            func = request.environ.get('werkzeug.server.shutdown')
+            func()
+        else:
+            abort(400, message="invalid request")
 
         return {"message": "success"}, 200
 

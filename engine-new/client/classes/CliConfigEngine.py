@@ -354,13 +354,26 @@ class CliConfigEngine(cmd.Cmd):
 
         try:
             engine = self.config.get('data').get('engines').get(engine_id)
-            self.config.get('data').get('engines').get(engine_id)['ssl'] = 1
             self.config.get('data').get('engines').get(engine_id)['certificate_file'] = cf
+            self.config.save()
         except Exception, ex:
             print "[e] failed to save SSL configuration for engine '%s'" % engine_id
             return False
 
-        self.config.save()
+        return True
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def enable_engine_ssl(self, engine_id):
+        try:
+            engine = self.config.get('data').get('engines').get(engine_id)
+            self.config.get('data').get('engines').get(engine_id)['ssl'] = 1
+            self.config.save()
+        except Exception, ex:
+            print "[e] failed to enable SSL for engine '%s'" % engine_id
+            return False
         return True
 
     # -------------------------------------------------------------------------
@@ -413,7 +426,7 @@ class CliConfigEngine(cmd.Cmd):
 
             r_object = {
                 "method": "POST",
-                "uri": "/setup/ssl?apikey=" + engine.get('apikey'),
+                "uri": "/setup/ssl?enable=1&apikey=" + engine.get('apikey'),
                 "data": r_object_data
             }
 
@@ -430,14 +443,36 @@ class CliConfigEngine(cmd.Cmd):
                 print "[e] certificate distribution failed: %s" % rc.get('data').get('message')
                 return
 
-            os.unlink(kf)
+            try:
+                os.unlink(kf)
+            except Exception, ex:
+                pass
+
+            self.enable_engine_ssl(args[1])
 
         elif args[0] == "disable":
-            # TODO:
-            #  1. send ssl disable request to engine
-            #  2. if returns 'success', remove engine cert from local config
-            #  3. delete local copy of engine cert
-            pass
+            r_object = {
+                "method": "POST",
+                "uri": "/setup/ssl?enable=0&apikey=" + engine.get('apikey'),
+                "data": None
+            }
+
+            rc = Utils.engine_request(self.config,
+                                     engine.get('address'),
+                                     engine.get('port'),
+                                     r_object,
+                                     args[1])
+            if not rc:
+                print "[e] failed to disable SSL on engine '%s'" % args[1]
+                return
+            sc = rc.get('status')
+            if sc != 200:
+                print "[e] failed to disable SSL on engine '%s': %s" %\
+                      (args[1], rc.get('data').get('message'))
+                return
+
+            self.config.get('data').get('engines').get(args[1])['ssl'] = 0
+            self.config.save()
         else:
             print "[e] invalid option '%s'" % args[0]
             return

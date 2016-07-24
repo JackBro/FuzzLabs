@@ -37,6 +37,21 @@ class CliConfigEngine(cmd.Cmd):
     #
     # -------------------------------------------------------------------------
 
+    def get_engine_by_id(self, id):
+        engines = self.config.get('data').get('engines')
+        if not engines or len(list(engines)) == 0:
+            print "[i] no engines registered"
+            return None
+        engine = engines.get(id)
+        if not engine:
+            print "[i] no engine registered with id '%s'" % id
+            return None
+        return engine
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
     def do_shell(self, args):
         'Execute operating system command.'
         os.system(args)
@@ -170,14 +185,8 @@ class CliConfigEngine(cmd.Cmd):
     # -------------------------------------------------------------------------
 
     def do_shutdown(self, args):
-        engines = self.config.get('data').get('engines')
-        if not engines or len(list(engines)) == 0:
-            print "[i] no engines registered"
-            return
-        engine = engines.get(args)
-        if not engine:
-            print "[i] no engine registered with id '%s'" % args
-            return
+        engine = self.get_engine_by_id(args)
+        if not engine: return
 
         rc = Utils.engine_request(self.config,
                                  engine['address'],
@@ -208,14 +217,9 @@ class CliConfigEngine(cmd.Cmd):
         if len(args) != 2:
             print "[e] syntax error"
             return
-        engines = self.config.get('data').get('engines')
-        if not engines or len(list(engines)) == 0:
-            print "[i] no engines registered"
-            return
-        engine = engines.get(args[1])
-        if not engine:
-            print "[i] no engine registered with id '%s'" % args[1]
-            return
+
+        engine = self.get_engine_by_id(args[1])
+        if not engine: return
 
         uri = None
         if args[0] == "abandon":
@@ -385,14 +389,9 @@ class CliConfigEngine(cmd.Cmd):
         if len(args) != 2:
             print "[e] syntax error"
             return
-        engines = self.config.get('data').get('engines')
-        if not engines or len(list(engines)) == 0:
-            print "[i] no engines registered"
-            return
-        engine = engines.get(args[1])
-        if not engine:
-            print "[i] no engine registered with id '%s'" % args[1]
-            return
+
+        engine = self.get_engine_by_id(args[1])
+        if not engine: return
 
         uri = None
         if args[0] == "enable":
@@ -482,6 +481,77 @@ class CliConfigEngine(cmd.Cmd):
     # -------------------------------------------------------------------------
 
     def help_ssl(self):
-        print "\nEnable or disable SSL for a given engine connection..\n\n" +\
+        print "\nEnable or disable SSL for a given engine connection.\n\n" +\
               "Syntax: ssl [ enable | disable ] <engine id>\n"
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def do_acl(self, args):
+        engine_id = None
+        command   = None
+        address   = None
+        args = args.split(" ")
+        if args < 2:
+            print "[e] syntax error"
+            help_acl()
+            return
+
+        try:
+            engine_id = args[0]
+            command   = args[1]
+            if command in ["add", "remove"]:
+                address = args[2]
+        except Exception, ex:
+            print "[e] syntax error"
+            help_acl()
+            return
+
+        engine = self.get_engine_by_id(engine_id)
+        if not engine: return
+
+        if command == "list":
+            r_object = {
+                "method": "GET",
+                "uri": "/management/acl/list?apikey=" + engine.get('apikey'),
+                "data": None
+            }
+
+            rc = Utils.engine_request(self.config,
+                                      engine.get('address'),
+                                      engine.get('port'),
+                                      r_object,
+                                      engine_id)
+            if not rc:
+                print "[e] failed to retrieve ACL"
+                return
+            if rc.get('status') != 200:
+                print "[e] failed to retrieve ACL: %s" % rc.get('data').get('message')
+                return
+
+            allowed_list = rc.get('data').get('message')
+            if len(allowed_list) == 0:
+                print "ACL empty for engine '%s'" % engine_id
+                return
+
+            print
+            print "%-15s\t%s" % ("Client", "Certificate")
+            print "-" * 80
+            for allowed in allowed_list:
+                cp = allowed.get('certificate')
+                if not cp:
+                    cp = "Not set"
+                else:
+                    cp = "/config/" + "".join(cp.split("config/")[1])
+                print "%-15s\t%s" % (allowed.get('address'), cp)
+            print
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def help_acl(self):
+        print "\nModify the ACL of an engine.\n\n" +\
+              "Syntax: acl <engine ID> [ list | add <IP address> | remove <IP address> ]\n"
 

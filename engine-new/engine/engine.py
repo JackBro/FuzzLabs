@@ -14,6 +14,7 @@ from classes.ResourceSetupSsl import ResourceSetupSsl
 from classes.ResourcePing import ResourcePing
 from classes.ResourceShutdown import ResourceShutdown
 from classes.ResourceRemove import ResourceRemove
+from classes.ResourceAclList import ResourceAclList
 
 ROOT = os.path.dirname(
             os.path.abspath(
@@ -42,6 +43,9 @@ api.add_resource(ResourceShutdown,
                  resource_class_kwargs=config)
 api.add_resource(ResourceRemove,
                  '/management/remove',
+                 resource_class_kwargs=config)
+api.add_resource(ResourceAclList,
+                 '/management/acl/list',
                  resource_class_kwargs=config)
 
 def start_engine():

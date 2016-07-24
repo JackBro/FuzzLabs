@@ -16,6 +16,7 @@ from classes.ResourceShutdown import ResourceShutdown
 from classes.ResourceRemove import ResourceRemove
 from classes.ResourceAclList import ResourceAclList
 from classes.ResourceAclAdd import ResourceAclAdd
+from classes.ResourceAclRemove import ResourceAclRemove
 
 ROOT = os.path.dirname(
             os.path.abspath(
@@ -50,6 +51,9 @@ api.add_resource(ResourceAclList,
                  resource_class_kwargs=config)
 api.add_resource(ResourceAclAdd,
                  '/management/acl/add',
+                 resource_class_kwargs=config)
+api.add_resource(ResourceAclRemove,
+                 '/management/acl/remove',
                  resource_class_kwargs=config)
 
 def start_engine():

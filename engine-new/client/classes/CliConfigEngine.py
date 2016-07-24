@@ -495,7 +495,7 @@ class CliConfigEngine(cmd.Cmd):
         args = args.split(" ")
         if args < 2:
             print "[e] syntax error"
-            help_acl()
+            self.help_acl()
             return
 
         try:
@@ -505,7 +505,7 @@ class CliConfigEngine(cmd.Cmd):
                 address = args[2]
         except Exception, ex:
             print "[e] syntax error"
-            help_acl()
+            self.help_acl()
             return
 
         engine = self.get_engine_by_id(engine_id)
@@ -565,7 +565,23 @@ class CliConfigEngine(cmd.Cmd):
                 print "[e] failed to update ACL: %s" % rc.get('data').get('message')
                 return
         elif command == "remove":
-            pass
+            r_object = {
+                "method": "POST",
+                "uri": "/management/acl/remove?apikey=" + engine.get('apikey'),
+                "data": {"address": address}
+            }
+
+            rc = Utils.engine_request(self.config,
+                                      engine.get('address'),
+                                      engine.get('port'),
+                                      r_object,
+                                      engine_id)
+            if not rc:
+                print "[e] failed to update ACL"
+                return
+            if rc.get('status') != 200:
+                print "[e] failed to update ACL: %s" % rc.get('data').get('message')
+                return
         else:
             print "[e] invalid action requested"
             return

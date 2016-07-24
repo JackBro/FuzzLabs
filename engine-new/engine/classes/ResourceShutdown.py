@@ -4,7 +4,7 @@ from flask_restful import reqparse, abort, Resource
 from classes.Utils import Utils
 
 parser = reqparse.RequestParser()
-parser.add_argument('apikey', type=str, location='args')
+parser.add_argument('apikey', type=str, required=True, location='args')
 
 class ResourceShutdown(Resource):
 

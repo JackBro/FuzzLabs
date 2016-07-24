@@ -546,6 +546,29 @@ class CliConfigEngine(cmd.Cmd):
                     cp = "/config/" + "".join(cp.split("config/")[1])
                 print "%-15s\t%s" % (allowed.get('address'), cp)
             print
+        elif command == "add":
+            r_object = {
+                "method": "POST",
+                "uri": "/management/acl/add?apikey=" + engine.get('apikey'),
+                "data": {"address": address}
+            }
+
+            rc = Utils.engine_request(self.config,
+                                      engine.get('address'),
+                                      engine.get('port'),
+                                      r_object,
+                                      engine_id)
+            if not rc:
+                print "[e] failed to update ACL"
+                return
+            if rc.get('status') != 200:
+                print "[e] failed to update ACL: %s" % rc.get('data').get('message')
+                return
+        elif command == "remove":
+            pass
+        else:
+            print "[e] invalid action requested"
+            return
 
     # -------------------------------------------------------------------------
     #

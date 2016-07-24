@@ -4,8 +4,6 @@ from flask_restful import reqparse, abort, Resource
 from classes.Utils import Utils
 
 parser = reqparse.RequestParser()
-parser.add_argument("current", type=str, help="engine current password")
-parser.add_argument("password", type=str, help="engine new password")
 
 """
  Either a users sets the API key via the configuration file locally, or

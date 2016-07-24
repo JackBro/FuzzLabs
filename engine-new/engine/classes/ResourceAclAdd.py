@@ -4,9 +4,11 @@ from flask_restful import reqparse, abort, Resource
 from classes.Utils import Utils
 
 parser = reqparse.RequestParser()
-parser.add_argument('apikey', type=str, required=True, location='args')
+parser.add_argument('apikey',  type=str, required=True, location='args')
+parser.add_argument("address", type=str, required=True, 
+                    help="address to grant access to")
 
-class ResourceAclList(Resource):
+class ResourceAclAdd(Resource):
 
     def __init__(self, **kwargs):
         self.root   = kwargs.get('root')
@@ -41,8 +43,25 @@ class ResourceAclList(Resource):
     #
     # -------------------------------------------------------------------------
 
-    def get(self):
+    def is_allowed(self, address):
+        for allowed in self.config.get('data').get('security').get('allow'):
+            if allowed.get('address') == address: return True
+        return False
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def post(self):
         self.check_access()
-        allow = self.config.get('data').get('security').get('allow')
-        return {"message": allow}, 200
+        args = parser.parse_args(strict=True)
+        if self.is_allowed(args['address']):
+            return {"message": "access is already granted"}, 200
+
+        self.config.get('data').get('security').get('allow').append({
+            "address": args['address']
+        })
+        Utils.save_file(self.root + "/config/config.json",
+                        self.config.get('data'))
+        return {"message": "success"}, 200
 

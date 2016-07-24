@@ -5,11 +5,11 @@ from flask_restful import reqparse, abort, Resource
 from classes.Utils import Utils
 
 parser = reqparse.RequestParser()
-parser.add_argument('apikey', type=str, location='args')
-parser.add_argument('enable', type=int, location='args')
-parser.add_argument("client", type=str, help="client certificate")
-parser.add_argument("cert",   type=str, help="engine certificate")
-parser.add_argument("key",    type=str, help="engine certificate key")
+parser.add_argument('apikey', type=str, required=True, location='args')
+parser.add_argument('enable', type=int, required=True, location='args')
+parser.add_argument("client", type=str, required=True, help="client certificate")
+parser.add_argument("cert",   type=str, required=True, help="engine certificate")
+parser.add_argument("key",    type=str, required=True, help="engine certificate key")
 
 # -----------------------------------------------------------------------------
 #

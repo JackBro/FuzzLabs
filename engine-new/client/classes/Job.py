@@ -9,8 +9,8 @@ class Job(dict):
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
 
-    def __init__(self, name):
-        self.id = Utils.generate_name()
+    def __init__(self, id, name):
+        self.id = id
         self.name = name
         self.grammar = None
         self.session = {

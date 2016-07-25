@@ -6,6 +6,7 @@ import cmd
 import sys
 import pprint
 import inspect
+from classes.Utils import Utils
 from classes.Config import Config
 from classes.Loader import Loader
 from classes.State import State
@@ -99,11 +100,12 @@ class Cli(cmd.Cmd):
         'Add a new job'
         argsp = args.split(" ")
         if argsp[0] == "job":
-            name = str("".join(argsp[1:]))
+            name   = str("".join(argsp[1:]))
+            job_id = Utils.generate_name()
             if len(name) == 0:
                 print "[e] invalid job name specified"
                 return
-            self.state.jobs[name] = Job(name)
+            self.state.jobs[job_id] = Job(job_id, name)
         else:
             print "[e] type '%s' not supported" % str(argsp[0])
             self.help_new()
@@ -114,7 +116,8 @@ class Cli(cmd.Cmd):
     # -------------------------------------------------------------------------
 
     def help_new(self):
-        print "\nThe new command can be used to create new items such as jobs and grammars.\n\n" +\
+        print "\nThe new command can be used to create new items such as " +\
+              "jobs and grammars.\n\n" +\
               "Syntax: new [ job <name> | grammar <name> ]\n\n" +\
               "job:     create a new job identified by <name>\n" +\
               "grammar: create a new grammar identified by <name>\n"
@@ -129,10 +132,11 @@ class Cli(cmd.Cmd):
         argsp = args.split(" ")
         if argsp[0] == "jobs":
             print
-            print "%-35s\t%-40s" % ("Name", "UUID")
+            print "%-35s\t%-40s" % ("UUID", "Name")
             print "-" * 80
             for k, v in self.state.jobs.iteritems():
-                print "%-35s\t%-40s" % (k[:30], self.state.jobs[k].id)
+                print "%-35s\t%-40s" % (self.state.jobs[k].id,
+                                        self.state.jobs[k].name)
             print
         elif argsp[0] == "job":
             name = str("".join(argsp[1:]))
@@ -166,11 +170,10 @@ class Cli(cmd.Cmd):
     # -------------------------------------------------------------------------
 
     def help_show(self):
-        print "\nThe show command can be used to list or inspect elements.\n\n" +\
+        print "\nThe show command can be used to list or inspect jobs.\n\n" +\
               "Syntax: show [ jobs | jobs <name> ]\n\n" +\
               "jobs:    lists all registered jobs\n" +\
-              "job:     prints properties of job identified by <name>\n" +\
-              "modules: list loaded modules\n"
+              "job:     prints properties of job identified by <name>\n"
 
     # -------------------------------------------------------------------------
     #

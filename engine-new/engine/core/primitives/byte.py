@@ -16,13 +16,6 @@ all_properties = [
         "error": "primitive requires max_num to be of type int"
     },
     {
-        "name": "endian",
-        "type": "str",
-        "values": ["big", "little"],
-        "default": "little",
-        "error": "primitive requires endian to be of type str ('big' or 'little')"
-    },
-    {
         "name": "format",
         "type": "str",
         "values": ["binary", "ascii"],

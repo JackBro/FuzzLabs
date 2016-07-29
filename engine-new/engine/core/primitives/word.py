@@ -19,7 +19,7 @@ all_properties = [
         "name": "endian",
         "type": "str",
         "values": ["big", "little"],
-        "default": "little",
+        "default": "big",
         "error": "primitive requires endian to be of type str ('big' or 'little')"
     },
     {

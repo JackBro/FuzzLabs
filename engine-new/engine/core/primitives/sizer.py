@@ -6,7 +6,6 @@ all_properties = [
     {
         "name": "size",
         "type": ["int", "long"],
-        "values": [1, 4, 8],
         "default": 4,
         "error": "primitive requires size to be of type int or long"
     },
@@ -51,7 +50,7 @@ all_properties = [
         "name": "endian",
         "type": "str",
         "values": ["big", "little"],
-        "default": "little",
+        "default": "big",
         "error": "primitive requires endian to be of type str ('big' or 'little')"
     },
     {
@@ -97,7 +96,7 @@ class sizer(__primitive__):
     # -------------------------------------------------------------------------
 
     def init_library(self):
-        max = Utils.bin_to_dec("1" + "0" * (self.get('size') * 8))
+        max = Utils.bin_to_dec("1" + "0" * (self.get('size') * 8)) - 1
 
         if self.full_range:
             for i in xrange(0, max + 1):
@@ -125,23 +124,9 @@ class sizer(__primitive__):
         if self.get('format') == "ascii":
             return str(value)
         else:
-            endian = ">"
-            if self.get('endian') == "little":
-                endian = "<"
-
-            format = "I"
-            if self.get('size') == 1:
-                format = "B"
-            elif self.get('size') == 4:
-                format = "I"
-            elif self.get('size') == 8:
-                format = "Q"
-
-            try:
-                return struct.pack(endian + format, value)
-            except Exception, ex:
-                raise Exception('failed to render sizer %s (%s)' %\
-                (self.name,  str(ex)))
+            return Utils.format_binary_numeric(value, 
+                                               self.get('size'),
+                                               self.get('endian'))
 
     # -------------------------------------------------------------------------
     #

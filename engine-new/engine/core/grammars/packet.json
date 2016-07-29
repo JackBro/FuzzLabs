@@ -1,18 +1,10 @@
 {
     "primitive": "block",
     "properties": {
-        "name":  "p01",
+        "name":  "b01",
         "logic": "linear"
     },
     "primitives": [
-        {
-            "primitive": "byte",
-            "properties": {
-                "name": "test",
-                "value": 61,
-                "format": "ascii"
-            }
-        },
         {
             "primitive": "rand",
             "properties": {
@@ -23,8 +15,53 @@
                 "max_value": 126,
                 "max_mutations": 16,
                 "format": "binary",
+                "ignore": 0,
                 "fuzzable": 1
             }
+        },
+        {
+            "primitive": "delimiter",
+            "properties": {
+                "name": "d01",
+                "value": " ",
+                "fuzzable": 0
+            }
+        },
+        {
+            "primitive": "sizer",
+            "properties": {
+                "name": "s01",
+                "block": "b02",
+                "value": 1,
+                "size": 3,
+                "format": "binary",
+                "fuzzable": 0
+            }
+        },
+        {
+            "primitive": "delimiter",
+            "properties": {
+                "name": "d02",
+                "value": " ",
+                "fuzzable": 0
+            }
+        },
+        {
+            "primitive": "block",
+            "properties": {
+                "name":  "b02",
+                "logic": "linear"
+            },
+            "primitives": [
+                {
+                    "primitive": "byte",
+                    "properties": {
+                        "name": "by01",
+                        "value": 1,
+                        "format": "ascii"
+                    }
+                }
+            ]
         }
     ]
 }

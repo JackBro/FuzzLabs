@@ -97,3 +97,19 @@ class Utils:
             ilist.append(case)
         return ilist
 
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    @staticmethod
+    def format_binary_numeric(value, width, endian = "big"):
+        hex_str = hex(value)[2:]
+        padded  = ("0" + hex_str) if len(hex_str) % 2 else hex_str
+        str_list = []
+        for c in range(0, len(padded) / 2):
+            str_list.append(int(padded[c:c + 2], 16))
+        str_list = list(reversed(str_list))
+        str_list += ([0] * (width - len(str_list)))
+        if endian == "big": str_list = list(reversed(str_list))
+        return "".join(map(chr, str_list))
+

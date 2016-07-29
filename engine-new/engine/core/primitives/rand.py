@@ -1,15 +1,10 @@
 from __primitive import __primitive__
 from classes.Utils import Utils
+import copy
 import random
 import struct
 
 all_properties = [
-    {
-        "name": "value",
-        "type": ["int", "long"],
-        "mandatory": 1,
-        "error": "primitive requires value to be of type long or int"
-    },
     {
         "name": "min_length",
         "type": ["int", "long"],
@@ -39,13 +34,6 @@ all_properties = [
         "type": ["int", "long"],
         "default": 255,
         "error": "primitive requires max_value to be of type int or long"
-    },
-    {
-        "name": "format",
-        "type": "str",
-        "values": ["binary", "ascii"],
-        "default": "binary",
-        "error": "primitive requires format to be of type str"
     },
     {
         "name": "fuzzable",
@@ -83,6 +71,7 @@ class rand(__primitive__):
     def __init__(self, properties, parent):
         global all_properties
         __primitive__.__init__(self, properties, all_properties, parent)
+        self.value = ""
 
     # -------------------------------------------------------------------------
     #
@@ -105,6 +94,6 @@ class rand(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
-        self.mutate()
+        if self.ignore: self.mutate()
         return str(self.value)
 

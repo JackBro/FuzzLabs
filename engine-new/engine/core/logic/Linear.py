@@ -5,12 +5,7 @@ class Linear:
     # -------------------------------------------------------------------------
 
     def __init__(self, b):
-        try:
-            if b.type != "block":
-                raise Exception("logic has to be initialized with block")
-        except Exception, ex:
-            raise Exception("failed to initialize logic (%s)" % str(ex))
-        self.root = b
+        self.root = b.get('primitives')
         self.position = 0
 
     # -------------------------------------------------------------------------
@@ -36,7 +31,7 @@ class Linear:
         for item_position in range(0, len(self.root)):
             if self.position == item_position:
                 if not self.root[item_position].get('ignore'):
-                    while not self.root[item_position].complete:
+                    while not self.root[item_position].get('complete'):
                         self.root[item_position].mutate()
                         r = self.root[item_position].render()
                         if type(r).__name__ == "generator":

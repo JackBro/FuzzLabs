@@ -6,13 +6,23 @@
     },
     "primitives": [
         {
-            "primitive": "binary",
+            "primitive": "byte",
             "properties": {
-                "name": "h01",
-                "value": [
-                    65, 65, 65, 65,
-                    65, 65, 65, 65
-                ],
+                "name": "test",
+                "value": 61,
+                "format": "ascii"
+            }
+        },
+        {
+            "primitive": "rand",
+            "properties": {
+                "name": "r01",
+                "min_length": 8,
+                "max_length": 8,
+                "min_value": 70,
+                "max_value": 126,
+                "max_mutations": 16,
+                "format": "binary",
                 "fuzzable": 1
             }
         }

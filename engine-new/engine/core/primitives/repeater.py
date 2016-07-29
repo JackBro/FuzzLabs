@@ -42,12 +42,6 @@ all_properties = [
         "mandatory": 1,
         "default": "",
         "error": "primitive requires value to be of type str"
-    },
-    {
-        "name": "name",
-        "type": "str",
-        "mandatory": 0,
-        "error": "primitive requires name to be of type str"
     }
 ]
 

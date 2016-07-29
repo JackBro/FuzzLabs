@@ -14,11 +14,6 @@ all_properties = [
         "values": [0, 1],
         "default": 0,
         "error": "primitive is non-fuzzable"
-    },
-    {
-        "name": "name",
-        "type": "str",
-        "error": "primitive requires name to be of type str"
     }
 ]
 

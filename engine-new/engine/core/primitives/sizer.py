@@ -65,11 +65,6 @@ all_properties = [
         "type": "str",
         "mandatory": 0,
         "error": "primitive requires block name to be of type str"
-    },
-    {
-        "name": "name",
-        "type": "str",
-        "error": "primitive requires name to be of type str"
     }
 ]
 

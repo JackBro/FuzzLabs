@@ -43,11 +43,6 @@ all_properties = [
         "error": "primitive requires fuzzable to be True (1)"
     },
     {
-        "name": "name",
-        "type": "str",
-        "error": "primitive requires name to be of type str"
-    },
-    {
         "name": "ignore",
         "type": "bool",
         "values": [0, 1],

@@ -65,9 +65,8 @@ class qword(__primitive__):
     # -------------------------------------------------------------------------
 
     def init_library(self):
-        max = Utils.bin_to_dec("1" + "0" * 64) # 64 bits
-        if self.signed:
-	    max = Utils.bin_to_dec("1" + "0" * 64) / 2 - 1
+        max = Utils.bin_to_dec("1" + "0" * 64)  - 1 # 64 bits
+        if self.signed: max = max / 2
 
         if self.max_num and self.max_num > max:
             raise Exception("%s primitive maximum value is %d" % (self.type, max))

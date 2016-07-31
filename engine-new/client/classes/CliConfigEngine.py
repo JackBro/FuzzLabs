@@ -8,7 +8,6 @@ import inspect
 import httplib
 
 from OpenSSL import crypto, SSL
-from socket import gethostname
 from time import gmtime, mktime
 from os.path import exists, join
 
@@ -342,29 +341,7 @@ class CliConfigEngine(cmd.Cmd):
 
         eid = self.config.get('data').get('security').get('ssl').get('certificate_file')
         eid = eid.split(".")[0]
-        self.create_certificate(eid, cf, kf)
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def create_engine_certificates(self, engine_id):
-        cert_root = self.config.get('root') + "/config/certificates/"
-        cf = cert_root + engine_id + ".crt"
-        kf = cert_root + engine_id + ".key"
-        if not self.create_certificate(engine_id, cf, kf):
-            print "[e] failed to generate certificate for engine '%s'" % engine_id
-            return False
-
-        try:
-            engine = self.config.get('data').get('engines').get(engine_id)
-            self.config.get('data').get('engines').get(engine_id)['certificate_file'] = cf
-            self.config.save()
-        except Exception, ex:
-            print "[e] failed to save SSL configuration for engine '%s'" % engine_id
-            return False
-
-        return True
+        return self.create_certificate(eid, cf, kf)
 
     # -------------------------------------------------------------------------
     #
@@ -402,16 +379,11 @@ class CliConfigEngine(cmd.Cmd):
                     return
             # Not sure if I want to have CA cert and sign each cert with 
             # that. Probably would make things simpler, but... will see.
-            self.create_engine_certificates(args[1])
             cert_root = self.config.get('root') + "/config/certificates/"
             ccf = cert_root + self.config.get('data').get('security').get('ssl').get('certificate_file')
-            cf = cert_root + args[1] + ".crt"
-            kf = cert_root + args[1] + ".key"
 
             try:
                 client = Utils.read_file(ccf)
-                cert = Utils.read_file(cf)
-                key = Utils.read_file(kf)
             except Exception, ex:
                 print "[e] failed to read certificates: %s" % str(ex)
                 return
@@ -419,8 +391,7 @@ class CliConfigEngine(cmd.Cmd):
             # read in certs, base64 and include
             r_object_data = {
                 "client": base64.b64encode(client),
-                "cert": base64.b64encode(cert),
-                "key": base64.b64encode(key) 
+                "id": args[1]
             }
 
             r_object = {
@@ -442,10 +413,22 @@ class CliConfigEngine(cmd.Cmd):
                 print "[e] certificate distribution failed: %s" % rc.get('data').get('message')
                 return
 
+            engine_cert = rc.get('data').get('certificate')
+            if not engine_cert:
+                print "[e] certificate distribution failed: no certificate received from engine"
+                return
+
             try:
-                os.unlink(kf)
+                engine_cert = base64.b64decode(engine_cert)
             except Exception, ex:
-                pass
+                print "[e] invalid engine certificate received: %s" % str(ex)
+                return
+
+            try:
+                Utils.save_file(cert_root + args[1] + ".crt", engine_cert, False)
+            except Exception, ex:
+                print "[e] failed to save engine certificate: %s" % str(ex)
+                return
 
             self.enable_engine_ssl(args[1])
 

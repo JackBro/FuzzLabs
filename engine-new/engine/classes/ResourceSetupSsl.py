@@ -1,15 +1,16 @@
 import base64
+import socket
 from flask import Flask
 from flask import request
 from flask_restful import reqparse, abort, Resource
 from classes.Utils import Utils
+from OpenSSL import crypto, SSL
 
 parser = reqparse.RequestParser()
 parser.add_argument('apikey', type=str, required=True, location='args')
 parser.add_argument('enable', type=int, required=True, location='args')
 parser.add_argument("client", type=str, required=True, help="client certificate")
-parser.add_argument("cert",   type=str, required=True, help="engine certificate")
-parser.add_argument("key",    type=str, required=True, help="engine certificate key")
+parser.add_argument("id",     type=str, required=True, help="engine UUID")
 
 # -----------------------------------------------------------------------------
 #
@@ -81,6 +82,40 @@ class ResourceSetupSsl(Resource):
     #
     # -------------------------------------------------------------------------
 
+    def create_certificate(self, engine_id):
+        k = crypto.PKey()
+        k.generate_key(crypto.TYPE_RSA, 2048)
+
+        c = crypto.X509()
+        c.get_subject().C = "UK"
+        c.get_subject().ST = "London"
+        c.get_subject().L = "London"
+        c.get_subject().O = "DCNWS"
+        c.get_subject().OU = "DCNWS"
+        c.get_subject().CN = engine_id
+        c.set_serial_number(1000)
+        c.gmtime_adj_notBefore(0)
+        c.gmtime_adj_notAfter(10*365*24*60*60)
+        c.set_issuer(c.get_subject())
+        c.set_pubkey(k)
+        c.sign(k, 'sha1')
+
+        cert_root = self.root + "/config/certificates/"
+        try:
+            open(cert_root + "engine.crt", 'w').write(
+                crypto.dump_certificate(crypto.FILETYPE_PEM, c))
+            open(cert_root + "engine.key", 'w').write(
+                crypto.dump_privatekey(crypto.FILETYPE_PEM, k))
+        except Exception, ex:
+            print "[e] failed to create certificate and key files: %s" % str(ex)
+            return False
+
+        return True
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
     def post(self):
         self.check_access()
         args = parser.parse_args(strict=True)
@@ -95,29 +130,32 @@ class ResourceSetupSsl(Resource):
             func()
         elif args.get('enable') == 1:
             client = None
-            cert   = None
-            key    = None
 
-            if not args.get('cert') or not args.get('key') or\
-                not args.get('client'):
+            if not args.get('client') or not args.get('id'):
                 abort(400, message="invalid payload")
 
             try:
                 client = base64.b64decode(args.get('client'))
-                cert   = base64.b64decode(args.get('cert'))
-                key    = base64.b64decode(args.get('key'))
             except Exception, ex:
                 abort(400, message="failed to decode payload: " % str(ex))
 
-            rc = []
+            rc = True
             try:
-                rc.append(self.save_certificate(request.remote_addr, "client", client))
-                rc.append(self.save_certificate(request.remote_addr, "cert", cert))
-                rc.append(self.save_certificate(request.remote_addr, "key", key))
+                rc = self.create_certificate(args.get('id'))
+            except Exception, ex:
+                abort(400, message="failed to create engine certificate: %s" %\
+                           str(ex))
+
+            if not rc:
+                abort(400, message="failed to generate engine certificates")
+
+            rc = True
+            try:
+                rc = self.save_certificate(request.remote_addr, "client", client)
             except Exception, ex:
                 abort(400, message="failed to set up certificates: " % str(ex))
 
-            if False in rc:
+            if not rc:
                 abort(400, message="failed to set up certificates")
 
             cert_root = self.root + "/config/certificates/"
@@ -131,12 +169,17 @@ class ResourceSetupSsl(Resource):
 
             Utils.save_file(self.root + "/config/config.json",
                             self.config.get('data'))
-
-            open("/tmp/.flenginerestart", "w").write("restart")
-            func = request.environ.get('werkzeug.server.shutdown')
-            func()
         else:
             abort(400, message="invalid request")
 
-        return {"message": "success"}, 200
+        try:
+            engine_certificate = Utils.read_file(self.config.get('data').get('security').get('ssl')['certificate'])
+        except Exception, ex:
+            abort(500, message="failed to read engine certificate")
+
+        open("/tmp/.flenginerestart", "w").write("restart")
+        func = request.environ.get('werkzeug.server.shutdown')
+        func()
+        return {"message": "success", 
+                "certificate": base64.b64encode(engine_certificate)}, 200
 

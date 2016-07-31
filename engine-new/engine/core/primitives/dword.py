@@ -37,13 +37,6 @@ all_properties = [
         "error": "primitive requires signed to be of type bool (1 or 0)"
     },
     {
-        "name": "full_range",
-        "type": "bool",
-        "values": [0, 1],
-        "default": 0,
-        "error": "primitive requires full_range to be of type bool (1 or 0)"
-    },
-    {
         "name": "fuzzable",
         "type": "bool",
         "values": [0, 1],
@@ -81,23 +74,19 @@ class dword(__primitive__):
         if self.max_num == None or self.max_num == 0:
             self.max_num = max
 
-        if self.full_range:
-            for i in xrange(0, self.max_num + 1):
-                if i not in self.library: self.library.append(i)
-        else:
-            self.library += Utils.integer_boundaries(
-                self.library, 
-                self.max_num, 
-                0)
+        self.library += Utils.integer_boundaries(
+            self.library, 
+            self.max_num, 
+            0)
+        self.library += Utils.integer_boundaries(
+            self.library,
+            self.max_num,
+            self.max_num)
+        for v in [2, 3, 4, 8, 16, 32]:
             self.library += Utils.integer_boundaries(
                 self.library,
                 self.max_num,
-                self.max_num)
-            for v in [2, 3, 4, 8, 16, 32]:
-                self.library += Utils.integer_boundaries(
-                    self.library,
-                    self.max_num,
-                    self.max_num / v)
+                self.max_num / v)
 
         negatives = []
         if self.signed:

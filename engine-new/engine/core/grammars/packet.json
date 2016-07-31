@@ -6,61 +6,13 @@
     },
     "primitives": [
         {
-            "primitive": "rand",
+            "primitive": "word",
             "properties": {
-                "min_length": 8,
-                "max_length": 8,
-                "min_value": 70,
-                "max_value": 126,
-                "max_mutations": 16,
-                "format": "binary",
-                "ignore": 0,
-                "fuzzable": 1
-            }
-        },
-        {
-            "primitive": "delimiter",
-            "properties": {
-                "name": "d01",
-                "value": " ",
-                "fuzzable": 0
-            }
-        },
-        {
-            "primitive": "sizer",
-            "properties": {
-                "name": "s01",
-                "block": "b02",
+                "name": "by01",
                 "value": 1,
-                "size": 3,
-                "format": "binary",
-                "fuzzable": 0
+                "full_range": 1,
+                "format": "ascii"
             }
-        },
-        {
-            "primitive": "delimiter",
-            "properties": {
-                "name": "d02",
-                "value": " ",
-                "fuzzable": 0
-            }
-        },
-        {
-            "primitive": "block",
-            "properties": {
-                "name":  "b02",
-                "logic": "linear"
-            },
-            "primitives": [
-                {
-                    "primitive": "byte",
-                    "properties": {
-                        "name": "by01",
-                        "value": 1,
-                        "format": "ascii"
-                    }
-                }
-            ]
         }
     ]
 }

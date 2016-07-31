@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import time
 import threading
 from classes.Utils import Utils
 from logic.Linear import Linear
@@ -53,6 +54,8 @@ class Worker(threading.Thread):
         self.state = STATE_RUNNING
 
         for iteration in Linear(self.data).run():
+            if self.state == STATE_STOPPED: break
+            while self.state == STATE_PAUSED: time.sleep(1)
             if iteration:
                 print "".join(iteration)
 

@@ -2,6 +2,7 @@ import os
 import cmd
 import sys
 import json
+import copy
 import pprint
 import base64
 import inspect
@@ -222,7 +223,7 @@ class CliConfigEngine(cmd.Cmd):
 
         uri = None
         if args[0] == "abandon":
-            uri = "/management/remove?apikey=" + engine['apikey']
+            uri = "/management/remove?terminate=false&apikey=" + engine['apikey']
         elif args[0] == "terminate":
             uri = "/management/remove?terminate=true&apikey=" + engine['apikey']
         else:
@@ -230,18 +231,24 @@ class CliConfigEngine(cmd.Cmd):
             return
 
         rc = Utils.engine_request(self.config,
-                                 engine['address'],
-                                 engine['port'],
+                                 engine.get('address'),
+                                 engine.get('port'),
         {
             "method": "GET",
             "uri": uri,
             "data": None
-        }, engine)
+        }, args[1])
         if rc:
             if rc.get('status') == 200:
-                self.config.get('data').get('engines').pop(args[1])
+                engines_list = copy.deepcopy(self.config.get('data').get('engines'))
+                for engine in engines_list:
+                    if engine == args[1]:
+                        self.config.get('data').get('engines').pop(engine)
                 self.config.save()
                 print "[i] engine removed"
+            else:
+                print "[i] failed to remove engine: %s" %\
+                      rc.get('data').get('message')
 
     # -------------------------------------------------------------------------
     #

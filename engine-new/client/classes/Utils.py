@@ -1,18 +1,8 @@
-#!/usr/bin/env python
-
 import ssl
 import json
 import uuid
 import importlib
 import httplib
-
-"""
-from OpenSSL import crypto, SSL
-from socket import gethostname
-from time import gmtime, mktime
-from os.path import exists, join
-"""
-
 
 # =============================================================================
 #

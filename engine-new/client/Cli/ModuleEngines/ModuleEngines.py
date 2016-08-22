@@ -1,73 +1,23 @@
-import os
-import cmd
-import sys
-import json
+__VERSION__ = "0.0.1"
+
 import copy
-import pprint
 import base64
-import inspect
-import httplib
 
-from OpenSSL import crypto, SSL
-from time import gmtime, mktime
-from os.path import exists, join
-
-from classes.Utils import Utils
-from classes.State import State
-from classes.Job import Job
+from Classes.Utils import Utils
+from Cli.CliModuleBase import CliModuleBase
+from ModuleHelpers import ModuleHelpers
 
 # -----------------------------------------------------------------------------
 #
 # -----------------------------------------------------------------------------
 
-class CliConfigEngine(cmd.Cmd):
-    ruler = '-'
-    prompt = 'fuzzlabs(engines) > '
+class ModuleEngines(CliModuleBase):
 
     # -------------------------------------------------------------------------
     #
     # -------------------------------------------------------------------------
 
-    def __init__(self, config, completekey='tab', stdin = None, stdout = None):
-        cmd.Cmd.__init__(self, completekey, stdin, stdout)
-        self.config = config
-        self.pp     = pprint.PrettyPrinter(indent=2, width=80)
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def get_engine_by_id(self, id):
-        engines = self.config.get('data').get('engines')
-        if not engines or len(list(engines)) == 0:
-            print "[i] no engines registered"
-            return None
-        engine = engines.get(id)
-        if not engine:
-            print "[i] no engine registered with id '%s'" % id
-            return None
-        return engine
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def do_shell(self, args):
-        'Execute operating system command.'
-        os.system(args)
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def do_exit(self, args):
-        return True
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def callback_acl_init(self, status, reason, data, engine):
+    def callbackAclInit(self, status, reason, data, engine):
         if (status != 200):
             print "[e] failed to add engine: %s" % data.get('message')
 
@@ -75,7 +25,7 @@ class CliConfigEngine(cmd.Cmd):
     #
     # -------------------------------------------------------------------------
 
-    def callback_get_api_key(self, status, reason, data, engine):
+    def callbackGetApiKey(self, status, reason, data, engine):
         if (status != 200):
             print "[e] failed to add engine: %s" % data.get('message')
         else:
@@ -99,55 +49,23 @@ class CliConfigEngine(cmd.Cmd):
     #
     # -------------------------------------------------------------------------
 
-    def do_add(self, args):
-        initialization = [
-            {"method": "GET", "uri": "/setup/acl",
-             "callback": self.callback_acl_init},
-            {"method": "GET", "uri": "/setup/apikey",
-             "callback": self.callback_get_api_key}
-        ]
+    def cmd_list(self, args):
+        """
+        @shortdesc: List registered engines.
+        @longdesc: 
+        Provides a list of engines that have been registered using the 'engines
+        add' method. The output of the command shows the following details per
+        registered engine:
 
-        args = args.split(" ")
-        if len(args) < 1:
-            print "[e] invalid syntax"
-            return
-        address = args[0]
-        port = 26000
-        if len(args) == 2:
-            try:
-                port = int(args[1])
-            except:
-                print "[e] invalid port number"
-                return
+        - engine ID: A unique ID that can be used to reference the engine.
+        - Address:   The IP address or host name of the engine.
+        - Port:      The port the engine is accepting connections on.
+        - SSL:       Whether SSL is enabled or not.
+        - API key:   The API key used as authentication secret.
+        - Status:    Indicates whether the engine is active or offline.
 
-        for robject in initialization:
-            rc = Utils.engine_request(self.config,
-                                     address,
-                                     port,
-                                     robject,
-                                     None).get('status')
-            if rc != 200: break
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def help_add(self):
-        print "\nThe add command can be used to add a new engine.\n\n" +\
-              "Syntax: add <address> [ port ]\n\n" +\
-              "address: the IP address of the engine\n" +\
-              "port:    the port number the engine is listening on (default: 26000)\n\n" +\
-              "For the command to be successful The engine has to be running at\n" +\
-              "the time of issuing the command. The engine has to run with a stock\n" +\
-              "configuration as adding the engine involves automatic, initial\n" +\
-              "engine configuration.\n"
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def do_list(self, args):
-        'List registered engines.'
+        @syntax:    [MODULE] list
+        """
         engines = self.config.get('data').get('engines')
         if not engines or len(list(engines)) == 0:
             print "[i] no engines registered"
@@ -160,7 +78,7 @@ class CliConfigEngine(cmd.Cmd):
 
             rc = Utils.engine_request(self.config,
                                      engine_data['address'],
-                                     engine_data['port'], 
+                                     engine_data['port'],
             {
                 "method": "GET",
                 "uri": "/management/ping?apikey=" + engine_data['apikey'],
@@ -184,18 +102,93 @@ class CliConfigEngine(cmd.Cmd):
     #
     # -------------------------------------------------------------------------
 
-    def do_shutdown(self, args):
-        engine = self.get_engine_by_id(args)
-        if not engine: return
+    def cmd_add(self, args):
+        """
+        @shortdesc: Add a new engine.
+        @longdesc: 
+        To be able to manage engines, engines have to be registered using the
+        'add' command. Once an engine is registered it receives a unique ID
+        that can be used to reference the engine when using the other engine
+        management commands. To register an engine, the following details have
+        to be provided:
+
+        - Address:   The IP address or host name of the engine.
+        - Port:      The port the engine is listening on. (default: 26000)
+
+        @syntax:    [MODULE] add <address> <port>
+        """
+        initialization = [
+            {"method": "GET", "uri": "/setup/acl",
+             "callback": self.callbackAclInit},
+            {"method": "GET", "uri": "/setup/apikey",
+             "callback": self.callbackGetApiKey}
+        ]
+
+        if type(args) != list: args = args.split(" ")
+        if len(args) < 1:
+            print "[e] invalid syntax"
+            return
+        address = args[0]
+        port = 26000
+        if len(args) == 2:
+            try:
+                port = int(args[1])
+            except:
+                print "[e] invalid port number"
+                return
+
+        error = False
+        for robject in initialization:
+            rc = Utils.engine_request(self.config,
+                                     address,
+                                     port,
+                                     robject,
+                                     None)
+            if rc:
+                rc = rc.get('status')
+                if rc != 200:
+                    error = True
+                    break
+            else:
+                error = True
+                break
+
+        if not error:
+            print "[e] engine '%s:%d' added successfully" %\
+                  (address, port)
+        else:
+            print "[e] failed to add engine '%s:%d'" %\
+                  (address, port)
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def cmd_shutdown(self, args):
+        """
+        @shortdesc: Shut down an engine.
+        @longdesc:
+        The 'shutdown' command can be used to send a shutdown message resulting
+        in the termination of the engine. The function accepts the following
+        parameters:
+
+        - engine ID: A unique ID that can be used to reference the engine.
+
+        @syntax:    [MODULE] shutdown <engine ID>
+        """
+        engine = ModuleHelpers.getEngineById(self.config, args[0])
+        if not engine:
+            print "[e] engine not found"
+            return
 
         rc = Utils.engine_request(self.config,
-                                 engine['address'],
-                                 engine['port'],
+                                 engine.get('address'),
+                                 engine.get('port'),
         {
             "method": "GET",
             "uri": "/management/shutdown?apikey=" + engine['apikey'],
             "data": None
-        }, engine)
+        }, args[0])
         if rc:
             if rc.get('status') == 200:
                 print "[i] engine shut down"
@@ -204,22 +197,28 @@ class CliConfigEngine(cmd.Cmd):
     #
     # -------------------------------------------------------------------------
 
-    def help_shutdown(self):
-        print "\nThe shutdown command can be used to shut down the engine.\n\n" +\
-              "Syntax: shutdown <engine id>\n"
+    def cmd_remove(self, args):
+        """
+        @shortdesc: Remove an engine.
+        @longdesc:
+        The 'remove' command can be used to remove an engine from the client's
+        database. The function accepts the following parameters:
 
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
+        - abandon:   Clear the engine configuration and remove from database.
+        - terminate: Clear configuration, remove from datbase and shut down.
+        - engine ID: A unique ID that can be used to reference the engine.
 
-    def do_remove(self, args):
-        args = args.split(" ")
+        @syntax:    [MODULE] remove < abandon | terminate >  <engine ID>
+        """
+        if type(args) != list: args = args.split(" ")
         if len(args) != 2:
             print "[e] syntax error"
             return
 
-        engine = self.get_engine_by_id(args[1])
-        if not engine: return
+        engine = ModileHelpers.getEngineById(self.config, args[1])
+        if not engine:
+            print "[e] engine not found"
+            return
 
         uri = None
         if args[0] == "abandon":
@@ -228,6 +227,7 @@ class CliConfigEngine(cmd.Cmd):
             uri = "/management/remove?terminate=true&apikey=" + engine['apikey']
         else:
             print "[e] invalid option '%s'" % args[0]
+            print "[e] valid options are 'abandon' or 'terminate'"
             return
 
         rc = Utils.engine_request(self.config,
@@ -254,137 +254,37 @@ class CliConfigEngine(cmd.Cmd):
     #
     # -------------------------------------------------------------------------
 
-    def help_remove(self):
-        print "\nUnregisters the engine.\n\n" +\
-              "Syntax: remove [ abandon | terminate ] <engine id>\n\n" +\
-              "abandon:   zeroes out the API key and ACL of the engine configuration,\n" +\
-              "           removes the engine from the client database, but leaves\n" +\
-              "           the engine running. In this state, other clients can take\n" +\
-              "           over the engine.\n" +\
-              "terminate: same as abandon, but instead of leaving the engine running\n" +\
-              "           it will be completely shut down.\n"
+    def cmd_ssl(self, args):
+        """
+        @shortdesc: Manage engine SSL settings.
+        @longdesc:
+        The 'ssl' command can be used to manage the SSL configuration of the
+        registered engines. Enabling or disabling SSL has an immediate effect
+        and does not require restart or the engine or the client.
+        The function accepts the following parameters:
 
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
+        - enable:    Enable SSL support for the engine.
+        - disable:   Disable SSL support for the engine.
+        - engine ID: A unique ID that can be used to reference the engine.
 
-    def check_local_certificates(self):
-        has_certs = True
-        if not self.config.get('data').get('security'):
-            self.config.get('data')['security'] = {}
-            has_certs = False
-
-        if not self.config.get('data').get('security').get('ssl'):
-            self.config.get('data').get('security')['ssl'] = {}
-            has_certs = False
-
-        if not self.config.get('data').get('security').get('ssl').get('certificate_file'):
-            self.config.get('data').get('security').get('ssl')['certificate_file'] = "client.crt"
-            has_certs = False
-
-        if not self.config.get('data').get('security').get('ssl').get('key_file'):
-            self.config.get('data').get('security').get('ssl')['key_file'] = "client.key"
-            has_certs = False
-
-        if not self.config.get('root'):
-            print "[e] could not determine FuzzLabs client root path, aborting."
-            return
-
-        cf = self.config.get('root') + "/config/certificates/" +\
-             self.config.get('data').get('security').get('ssl').get('certificate_file')
-
-        kf = self.config.get('root') + "/config/certificates/" +\
-             self.config.get('data').get('security').get('ssl').get('key_file')
-
-        self.config.save()
-
-        if not exists(cf) or not exists(kf):
-            has_certs = False
-        return has_certs
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def create_certificate(self, engine_id, cf, kf):
-        k = crypto.PKey()
-        k.generate_key(crypto.TYPE_RSA, 2048)
-
-        c = crypto.X509()
-        c.get_subject().C = "UK"
-        c.get_subject().ST = "London"
-        c.get_subject().L = "London"
-        c.get_subject().O = "DCNWS"
-        c.get_subject().OU = "DCNWS"
-        c.get_subject().CN = engine_id
-        c.set_serial_number(1000)
-        c.gmtime_adj_notBefore(0)
-        c.gmtime_adj_notAfter(10*365*24*60*60)
-        c.set_issuer(c.get_subject())
-        c.set_pubkey(k)
-        c.sign(k, 'sha1')
-
-        try:
-            open(cf, 'w').write(
-                crypto.dump_certificate(crypto.FILETYPE_PEM, c))
-            open(kf, 'w').write(
-                crypto.dump_privatekey(crypto.FILETYPE_PEM, k))
-        except Exception, ex:
-            print "[e] failed to create local key file: %s" % str(ex)
-            return False
-
-        return True
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def create_local_certificates(self):
-        cf = self.config.get('root') + "/config/certificates/" +\
-             self.config.get('data').get('security').get('ssl').get('certificate_file')
-
-        kf = self.config.get('root') + "/config/certificates/" +\
-             self.config.get('data').get('security').get('ssl').get('key_file')
-
-        eid = self.config.get('data').get('security').get('ssl').get('certificate_file')
-        eid = eid.split(".")[0]
-        return self.create_certificate(eid, cf, kf)
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def enable_engine_ssl(self, engine_id):
-        try:
-            engine = self.config.get('data').get('engines').get(engine_id)
-            self.config.get('data').get('engines').get(engine_id)['ssl'] = 1
-            self.config.save()
-        except Exception, ex:
-            print "[e] failed to enable SSL for engine '%s'" % engine_id
-            return False
-        return True
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def do_ssl(self, args):
-        args = args.split(" ")
+        @syntax:    [MODULE] ssl < enable | disable >  <engine ID>
+        """
+        if type(args) != list: args = args.split(" ")
         if len(args) != 2:
             print "[e] syntax error"
             return
 
-        engine = self.get_engine_by_id(args[1])
+        engine = ModuleHelpers.getEngineById(self.config, args[1])
         if not engine: return
 
         uri = None
         if args[0] == "enable":
             # Make sure we got our local cert and key
-            if not self.check_local_certificates():
-                if not self.create_local_certificates():
+            if not ModuleHelpers.checkLocalCertificates(self.config):
+                if not ModuleHelpers.createLocalCertificate(self.config):
                     print "[e] failed to create certificates"
                     return
-            # Not sure if I want to have CA cert and sign each cert with 
+            # Not sure if I want to have CA cert and sign each cert with
             # that. Probably would make things simpler, but... will see.
             cert_root = self.config.get('root') + "/config/certificates/"
             ccf = cert_root + self.config.get('data').get('security').get('ssl').get('certificate_file')
@@ -437,7 +337,7 @@ class CliConfigEngine(cmd.Cmd):
                 print "[e] failed to save engine certificate: %s" % str(ex)
                 return
 
-            self.enable_engine_ssl(args[1])
+            ModuleHelpers.enableEngineSSL(self.config, args[1])
 
         elif args[0] == "disable":
             r_object = {
@@ -470,19 +370,31 @@ class CliConfigEngine(cmd.Cmd):
     #
     # -------------------------------------------------------------------------
 
-    def help_ssl(self):
-        print "\nEnable or disable SSL for a given engine connection.\n\n" +\
-              "Syntax: ssl [ enable | disable ] <engine id>\n"
+    def cmd_acl(self, args):
+        """
+        @shortdesc: Manage engine ACL settings.
+        @longdesc:
+        The 'acl' command can be used to manage the Access Control List (ACL)
+        settings of registered engines. The ACL is a list maintained by each
+        engine and consist of one or more IP addresses that are allowed to
+        communicate with the engine.
+        The function accepts the following parameters:
 
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
+        - list:      List the ACL entries for a given engine.
+        - add:       Add a new item to the ACL list.
+        - remove:    Remove an item from the ACL list.
+        - engine ID: A unique ID that can be used to reference the engine.
 
-    def do_acl(self, args):
+        @syntax:    [MODULE] acl [ list | <add | remove >  <engine ID> ]
+        """
+
+        """
+        @shortdesc: Manage engine ACL settings.
+        """
         engine_id = None
         command   = None
         address   = None
-        args = args.split(" ")
+        if type(args) != list: args = args.split(" ")
         if args < 2:
             print "[e] syntax error"
             self.help_acl()
@@ -498,7 +410,7 @@ class CliConfigEngine(cmd.Cmd):
             self.help_acl()
             return
 
-        engine = self.get_engine_by_id(engine_id)
+        engine = ModuleHelpers.getEngineById(self.config, engine_id)
         if not engine: return
 
         if command == "list":
@@ -575,12 +487,4 @@ class CliConfigEngine(cmd.Cmd):
         else:
             print "[e] invalid action requested"
             return
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def help_acl(self):
-        print "\nModify the ACL of an engine.\n\n" +\
-              "Syntax: acl <engine ID> [ list | add <IP address> | remove <IP address> ]\n"
 

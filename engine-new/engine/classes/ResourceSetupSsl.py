@@ -9,8 +9,8 @@ from OpenSSL import crypto, SSL
 parser = reqparse.RequestParser()
 parser.add_argument('apikey', type=str, required=True, location='args')
 parser.add_argument('enable', type=int, required=True, location='args')
-parser.add_argument("client", type=str, required=True, help="client certificate")
-parser.add_argument("id",     type=str, required=True, help="engine UUID")
+parser.add_argument("client", type=str, required=False, help="client certificate")
+parser.add_argument("id",     type=str, required=False, help="engine UUID")
 
 # -----------------------------------------------------------------------------
 #

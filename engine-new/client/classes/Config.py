@@ -1,4 +1,4 @@
-from classes.Utils import Utils
+from Classes.Utils import Utils
 
 # -----------------------------------------------------------------------------
 #
@@ -22,6 +22,6 @@ class Config(dict):
     # -------------------------------------------------------------------------
 
     def save(self):
-        Utils.save_file(self.root + "/config/config.json",
+        Utils.save_file(self.root + "/Config/config.json",
                         self.data,
                         True)

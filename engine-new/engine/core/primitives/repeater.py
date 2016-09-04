@@ -3,6 +3,11 @@ from primitives.__primitive import __primitive__
 
 all_properties = [
     {
+        "name": "name",
+        "type": "str",
+        "error": "primitive requires name to be of type str"
+    },
+    {
         "name": "fuzzable",
         "type": "bool",
         "values": [0, 1],

@@ -6,6 +6,11 @@ import struct
 
 all_properties = [
     {
+        "name": "name",
+        "type": "str",
+        "error": "primitive requires name to be of type str"
+    },
+    {
         "name": "min_length",
         "type": ["int", "long"],
         "default": 1,

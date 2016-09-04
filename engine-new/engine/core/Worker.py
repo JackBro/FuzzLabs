@@ -5,6 +5,7 @@ import inspect
 import threading
 from classes.Utils import Utils
 from classes.Config import Config
+from classes.Logger import Logger
 from classes.Scenario import Scenario
 from logic.Linear import Linear
 from primitives.block import block
@@ -15,27 +16,44 @@ from primitives.block import block
 
 class Worker(threading.Thread):
 
-    def __init__(self, config, uuid, job):
+    def __init__(self, logger, config, uuid, job):
         threading.Thread.__init__(self)
+        self.logger    = logger
         self.config    = config
-        self.uuid      = uuid
-        self.job       = Utils.read_json(job)
+        self.id      = uuid
+        self.job       = None
         self.scenarios = []
 
-        t_scenarios    = self.job.get('scenarios')
+        try:
+            self.job = Utils.read_json(job)
+        except Exception, ex:
+            msg = self.logger.log("failed to initialize job", "error",
+                            str(ex),
+                            self.id,
+                            self.job.get('id'))
+            raise Exception(msg)
+
+        t_scenarios = self.job.get('scenarios')
 
         if not t_scenarios:
-            raise Exception("worker '%s' failed to initialize job '%s': %s" %\
-                  (self.uuid, self.job.get('id'),
-                  "no scenarios defined"))
+            msg = self.logger.log("failed to initialize job", "error",
+                            "no scenarios defined",
+                            self.id,
+                            self.job.get('id'))
+            raise Exception(msg)
 
+        scenario_id = 0
         for scenario in t_scenarios:
             try:
-                self.scenarios.append(Scenario(uuid, self.job, self.config, scenario))
+                self.scenarios.append(Scenario(scenario_id, self.id, self.job, 
+                                               self.logger, self.config, scenario))
             except Exception, ex:
-                raise Exception("worker '%s' failed to initialize job '%s': %s (%s)" %\
-                      (self.uuid, self.job.get('id'),
-                      "failed to initialize scenario", str(ex)))
+                msg = self.logger.log("failed to initialize scenarios", "error",
+                                str(ex),
+                                self.id,
+                                self.job.get('id'))
+                raise Exception(msg)
+            scenario_id += 1
 
     # -------------------------------------------------------------------------
     #
@@ -43,9 +61,16 @@ class Worker(threading.Thread):
 
     def run(self):
         for scenario in self.scenarios:
-            print "[i] %s/%s" % (self.uuid, scenario.get('name'))
-            scenario.run()
-
+            print "[i] %s/%s" % (self.id, scenario.get('name'))
+            try:
+                scenario.run()
+            except Exception, ex:
+                msg = self.logger.log("failed to execute scenarios", "error",
+                                str(ex),
+                                self.id,
+                                self.job.get('id'),
+                                scenario.get('name'))
+                raise Exception(msg)
 
 # -----------------------------------------------------------------------------
 # This is just to be able to easily test the mutation engine
@@ -56,7 +81,10 @@ ROOT = os.path.dirname(
                 inspect.getfile(inspect.currentframe()
             )))
 config = Config(ROOT, "/../config/config.json")
+logger = Logger()
+
 w = Worker(
+        logger,
         config,
         Utils.generate_name(), 
         "../jobs/9b2ee5b0384d2cfe9698cc1a5d310702.job")

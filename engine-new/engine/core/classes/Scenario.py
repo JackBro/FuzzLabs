@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import os
 import time
 import inspect
@@ -17,19 +16,27 @@ class Scenario(dict):
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
 
-    def __init__(self, uuid, job, config, scenario):
-        self.worker_id  = uuid
+    def __init__(self, scenario_id, worker_id, job, logger, config, scenario):
+        self.id         = worker_id
         self.sleep_time = 0
         self.completed  = False
         self.job        = job
+        self.logger     = logger
         self.config     = config
         self.name       = scenario.get('name')
         if not self.name:
-            self.name  = Utils.generate_name()
-        self.units     = []
+            self.name   = str(scenario_id)
+        self.units      = []
 
         if self.job.get('session').get('sleep_time'):
             self.sleep_time = self.job.get('session').get('sleep_time')
+
+        if not scenario.get('units'):
+            self.logger.log("no unit specified for scenario", "warning",
+                            str(ex),
+                            self.id,
+                            self.job.get('id'),
+                            self.name)
 
         for unit in scenario.get('units'):
             self.units.append(self.load_unit(unit))
@@ -42,10 +49,32 @@ class Scenario(dict):
         u_path = self.config.get('root') + "/../units/" + unit + ".json"
         try:
             data = Utils.read_json(u_path)
+            if not data.get('properties'):
+                data['properties'] = {}
+            if data.get('properties').get('name'):
+                data['properties']['name'] = unit
             return block(data)
         except Exception, ex:
-            raise Exception("worker '%s' failed to load unit '%s': %s" %\
-                  (self.uuid, unit, str(ex)))
+            msg = self.logger.log("failed to load unit", "error",
+                            str(ex),
+                            self.id,
+                            self.job.get('id'),
+                            self.name,
+                            unit)
+            raise Exception(msg)
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def status(self, unit, ident = 0):
+        for item in unit:
+            primitives = item.get('primitives')
+            if not primitives:
+                print "%s%s: %d/%d" % ("    "*ident, item.name, item.total_mutations, item.mutation_index)
+            else: 
+                print "%s%s: %d/%d" % ("    "*ident, item.name, item.total_mutations, item.mutation_index)
+                self.status(item, ident + 1)
 
     # -------------------------------------------------------------------------
     #
@@ -53,14 +82,51 @@ class Scenario(dict):
 
     def run(self):
         for unit in self.units:
+            self.logger.log("executing", "info",
+                            "",
+                            self.id,
+                            self.job.get('id'),
+                            self.name,
+                            unit.name)
+
             while not unit.completed:
-                unit.mutate()
-                m_hdr = "[i] %s/%s/%s" % (self.worker_id, self.name, unit.get('name'))
-                print m_hdr + ": connect()"
+                try:
+                    unit.mutate()
+                except Exception, ex:
+                    msg = self.logger.log("failed to mutate unit", "error",
+                                    str(ex),
+                                    self.id,
+                                    self.job.get('id'),
+                                    self.name,
+                                    unit.name)
+                    raise Exception(msg)
+
+                # TODO: connect
                 for r_unit in self.units:
-                    print m_hdr + ": send(" + r_unit.render() + ")"
-                    print m_hdr + ": recv()"
+                    data = None
+                    try:
+                        print "-"*80        # TODO: remove
+                        self.status(r_unit) # TODO: remove
+                        data = r_unit.render()
+                    except Exception, ex:
+                        msg = self.logger.log("failed to render unit", "error",
+                                        str(ex),
+                                        self.id,
+                                        self.job.get('id'),
+                                        self.name,
+                                        unit.name)
+                        raise Exception(msg)
+
+                    # TODO: send(data)
+                    # TODO: recv
                     time.sleep(self.sleep_time)
-                print m_hdr + ": close()"
+                # TODO: disconnect
+
+            self.logger.log("finished", "info",
+                            "",
+                            self.id,
+                            self.job.get('id'),
+                            self.name,
+                            unit.name)
         self.completed = True
 

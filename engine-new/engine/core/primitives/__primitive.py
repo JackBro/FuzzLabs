@@ -25,7 +25,7 @@ class Property(dict):
 
     def __init__(self, prop, prop_value, prop_desc):
         if prop == None:
-            raise Exception('incomplete primitive')
+            raise Exception('incompleted primitive')
         if prop_value == None and prop_desc.get('default'):
             prop_value = value.get('default')
         if prop_value == None:
@@ -95,7 +95,7 @@ class __primitive__(dict):
         self.iter_cnt        = 0
         self.transforms      = properties.get('transforms')
         self.rendered        = ""
-        self.complete        = False
+        self.completed        = False
         self.library         = []
         self.primitives      = []
         self.mutation_index  = 0
@@ -139,7 +139,7 @@ class __primitive__(dict):
             self.init_library()
             self.total_mutations = len(self.library)
         else:
-            self.complete = True
+            self.completed = True
 
     # -------------------------------------------------------------------------
     #
@@ -264,10 +264,10 @@ class __primitive__(dict):
     def mutate(self):
         if self.get('fuzzable'):
             if self.mutation_index > len(self.library) - 1:
-                self.complete = True
+                self.completed = True
                 self.value = self.library[0]
 
-            if self.complete == True: return
+            if self.completed == True: return
 
             self.value = self.library[self.mutation_index]
             self.mutation_index += 1

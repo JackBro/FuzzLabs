@@ -1,7 +1,11 @@
 #!/usr/bin/env python
+import os
 import time
+import inspect
 import threading
 from classes.Utils import Utils
+from classes.Config import Config
+from classes.Scenario import Scenario
 from logic.Linear import Linear
 from primitives.block import block
 
@@ -9,92 +13,49 @@ from primitives.block import block
 #
 # -----------------------------------------------------------------------------
 
-STATE_UNINIT  = 0
-STATE_INIT    = 1 
-STATE_RUNNING = 2
-STATE_PAUSED  = 3
-STATE_STOPPED = 4
-
-# -----------------------------------------------------------------------------
-# NOTE: This is currently just a draft, not ready to be used and probably 
-#       contains several bugs.
-# -----------------------------------------------------------------------------
-
 class Worker(threading.Thread):
 
-    def __init__(self, config, uuid, job, grammar):
+    def __init__(self, config, uuid, job):
         threading.Thread.__init__(self)
-        self.config  = config
-        self.uuid    = uuid
-        self.job     = job
-        self.state   = STATE_UNINIT
-        self.data    = None
+        self.config    = config
+        self.uuid      = uuid
+        self.job       = Utils.read_json(job)
+        self.scenarios = []
 
-        try:
-            self.data = Utils.read_grammar(grammar)
-            self.data = block(self.data)
-        except Exception, ex:
-            self.state = STATE_UNINIT
-            """ TEMPORARILY COMMENTED
+        t_scenarios    = self.job.get('scenarios')
+
+        if not t_scenarios:
             raise Exception("worker '%s' failed to initialize job '%s': %s" %\
-                  (self.uuid, self.job.get('id'), str(ex)))
-            """
+                  (self.uuid, self.job.get('id'),
+                  "no scenarios defined"))
 
-        self.state = STATE_INIT
+        for scenario in t_scenarios:
+            try:
+                self.scenarios.append(Scenario(self.config, scenario))
+            except Exception, ex:
+                raise Exception("worker '%s' failed to initialize job '%s': %s (%s)" %\
+                      (self.uuid, self.job.get('id'),
+                      "failed to initialize scenario", str(ex)))
 
     # -------------------------------------------------------------------------
     #
     # -------------------------------------------------------------------------
 
     def run(self):
-        if self.state != STATE_INIT:
-            raise Exception("worker '%s' attempted to run uninitialized job '%s'" %\
-                  (self.uuid, self.job.get('id')))
-
-        self.state = STATE_RUNNING
-
-        for iteration in Linear(self.data).run():
-            if self.state == STATE_STOPPED: break
-            while self.state == STATE_PAUSED: time.sleep(1)
-            if iteration:
-                print "".join(iteration)
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def stop(self):
-        if self.state != STATE_RUNNING:
-            raise Exception("worker '%s' attempted to stop non-running job '%s'" %\
-                  (self.uuid, self.job.get('id')))
-
-        self.state = STATE_STOPPED
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def pause(self):
-        if self.state != STATE_RUNNING:
-            raise Exception("worker '%s' attempted to pause non-running job '%s'" %\
-                  (self.uuid, self.job.get('id')))
-
-        self.state = STATE_PAUSED
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def resume(self):
-        if self.state not in [STATE_PAUSED, STATE_STOPPED]:
-            raise Exception("worker '%s' attempted to resume job '%s' from invalid state: %d" %\
-                  (self.uuid, self.job.get('id'), self.state))
-
-        self.state = STATE_RUNNING
+        for scenario in self.scenarios:
+            print "[i] running scenario: %s" % scenario.get('name')
+            scenario.run()
 
 
+# -----------------------------------------------------------------------------
 # This is just to be able to easily test the mutation engine
+# -----------------------------------------------------------------------------
 
-w = Worker(None, None, None, "./grammars/packet.json")
+ROOT = os.path.dirname(
+            os.path.abspath(
+                inspect.getfile(inspect.currentframe()
+            )))
+config = Config(ROOT, "/../config/config.json")
+w = Worker(config, None, "../jobs/9b2ee5b0384d2cfe9698cc1a5d310702.job")
 w.start()
 

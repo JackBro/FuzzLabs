@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import json
 import uuid
 import importlib
@@ -48,14 +46,6 @@ class Utils:
             raise Exception("failed to write file: %s (%s)" %\
                            (filename, str(ex)))
         return True
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    @staticmethod
-    def read_grammar(filename):
-        return Utils.read_grammar(filename)
 
     # -------------------------------------------------------------------------
     #

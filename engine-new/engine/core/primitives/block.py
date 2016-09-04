@@ -66,7 +66,7 @@ class block(__primitive__):
     def __init__(self, properties, parent = None):
         global all_properties
         __primitive__.__init__(self, properties, all_properties, parent)
-        self.domutate = False
+        self.completed = False
 
         for primitive in properties.get('primitives'):
             try:
@@ -81,27 +81,20 @@ class block(__primitive__):
         self.logic = getattr(global_logic[self.logic],
                              self.logic[0].upper() + self.logic[1:])(self)
 
-        value = []
-        for p in self.primitives:
-            value.append(p.render())
-        self.value = value
-
     # -------------------------------------------------------------------------
     #
     # -------------------------------------------------------------------------
 
     def mutate(self):
-        value = self.logic.run().next()
-        if value == None:
-            self.complete = True
-            self.value = self.render()
-        else:
-            self.value = value
+        if self.logic.completed:
+            self.completed = True
+            return
+        self.logic.mutate()
 
     # -------------------------------------------------------------------------
     #
     # -------------------------------------------------------------------------
 
     def render(self):
-        return "".join(self.value)
+        return self.logic.render()
 

@@ -23,7 +23,6 @@ ROOT = os.path.dirname(
                 inspect.getfile(inspect.currentframe()
             )))
 config = Config(ROOT, "/config/config.json")
-config['root'] = ROOT
 
 app = Flask(__name__)
 api = Api(app)

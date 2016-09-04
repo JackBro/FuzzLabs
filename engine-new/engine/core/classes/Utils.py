@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import json
 import uuid
 import importlib
@@ -21,7 +19,7 @@ class Utils:
             with open(filename, 'r') as f:
                 data = f.read()
         except Exception, ex:
-            raise Exception("failed to load packet grammar (%s)" % str(ex))
+            raise Exception("failed to load file (%s)" % str(ex))
         return data
 
     # -------------------------------------------------------------------------
@@ -38,8 +36,16 @@ class Utils:
     # -------------------------------------------------------------------------
 
     @staticmethod
-    def read_grammar(filename):
-        return Utils.read_json(filename)
+    def save_file(filename, content, tojson = True):
+        try:
+            with open(filename, 'w') as f:
+                if tojson:
+                    content = json.dumps(content)
+                f.write(content)
+        except Exception, ex:
+            raise Exception("failed to write file: %s (%s)" %\
+                           (filename, str(ex)))
+        return True
 
     # -------------------------------------------------------------------------
     #
@@ -50,7 +56,7 @@ class Utils:
         try:
             data = json.loads(data)
         except Exception, ex:
-            raise Exception("failed to parse packet grammar (%s)" % str(ex))
+            raise Exception("failed to parse data (%s)" % str(ex))
         return data
 
     # -------------------------------------------------------------------------
@@ -96,20 +102,4 @@ class Utils:
             if case in library: continue
             ilist.append(case)
         return ilist
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    @staticmethod
-    def format_binary_numeric(value, width, endian = "big"):
-        hex_str = hex(value)[2:]
-        padded  = ("0" + hex_str) if len(hex_str) % 2 else hex_str
-        str_list = []
-        for c in range(0, len(padded) / 2):
-            str_list.append(int(padded[c:c + 2], 16))
-        str_list = list(reversed(str_list))
-        str_list += ([0] * (width - len(str_list)))
-        if endian == "big": str_list = list(reversed(str_list))
-        return "".join(map(chr, str_list))
 

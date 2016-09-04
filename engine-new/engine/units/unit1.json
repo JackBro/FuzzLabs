@@ -6,11 +6,18 @@
     },
     "primitives": [
         {
+            "primitive": "static",
+            "properties": {
+                "name": "stat1",
+                "value": "static01 "
+            }
+        },
+        {
             "primitive": "word",
             "properties": {
                 "name": "by01",
                 "value": 1,
-                "full_range": 1,
+                "full_range": 0,
                 "format": "ascii"
             }
         }

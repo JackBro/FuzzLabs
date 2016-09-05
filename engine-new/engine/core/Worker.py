@@ -7,8 +7,6 @@ from classes.Utils import Utils
 from classes.Config import Config
 from classes.Logger import Logger
 from classes.Scenario import Scenario
-from logic.Linear import Linear
-from primitives.block import block
 
 # -----------------------------------------------------------------------------
 #
@@ -42,11 +40,11 @@ class Worker(threading.Thread):
                             self.job.get('id'))
             raise Exception(msg)
 
-        scenario_id = 0
-        for scenario in t_scenarios:
+        for scenario_id in range(0, len(t_scenarios)):
             try:
-                self.scenarios.append(Scenario(scenario_id, self.id, self.job, 
-                                               self.logger, self.config, scenario))
+                self.scenarios.append(Scenario(scenario_id, 
+                                               self.job, 
+                                               self.config))
             except Exception, ex:
                 msg = self.logger.log("failed to initialize scenarios", "error",
                                 str(ex),

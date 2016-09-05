@@ -1,0 +1,2 @@
+class DriverDisconnectException(Exception):
+    pass

@@ -6,6 +6,10 @@ from classes.Utils import Utils
 from classes.Config import Config
 from logic.Linear import Linear
 from primitives.block import block
+from classes.MutationsExhaustedException import MutationsExhaustedException
+
+STATUS_CONNECTED    = 1
+STATUS_DISCONNECTED = 2
 
 # -----------------------------------------------------------------------------
 #
@@ -16,7 +20,7 @@ class Scenario(dict):
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
 
-    def __init__(self, scenario_id, job, config):
+    def __init__(self, config, scenario_id, job):
         scenario            = job.get('scenarios')[scenario_id]
         self.id             = scenario_id
         self.sleep_time     = 0
@@ -27,7 +31,8 @@ class Scenario(dict):
         if not self.name:
             self.name       = str(scenario_id)
         self.units          = []
-        self.mutation_index = 0
+        self.current_unit   = None
+        self.status         = STATUS_CONNECTED
 
         if self.job.get('session'):
             if self.job.get('session').get('sleep_time'):
@@ -38,6 +43,20 @@ class Scenario(dict):
 
         for unit in scenario.get('units'):
             self.units.append(self.load_unit(unit))
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def driverConnected(self):
+        self.status = STATUS_CONNECTED
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def driverDisconnected(self):
+        self.status = STATUS_DISCONNECTED
 
     # -------------------------------------------------------------------------
     #
@@ -59,15 +78,36 @@ class Scenario(dict):
     #
     # -------------------------------------------------------------------------
 
-    def status(self, unit, ident = 0):
-        print "Mutation index: %d" % self.mutation_index
+    def unit_status(self, unit, s_object):
         for item in unit:
             primitives = item.get('primitives')
             if not primitives:
-                print "%s%s: %d/%d" % ("    "*ident, item.name, item.total_mutations, item.mutation_index)
-            else: 
-                print "%s%s: %d/%d" % ("    "*ident, item.name, item.total_mutations, item.mutation_index)
-                self.status(item, ident + 1)
+                s_object[item.name] = {
+                    "total_mutations": item.total_mutations,
+                    "mutation_index": item.mutation_index
+                }
+            else:
+                self.unit_status(item, s_object)
+        return s_object
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def status(self, include_units = False):
+        s_info = {
+            "name": self.name,
+            "current_unit": self.current_unit
+        }
+        if include_units:
+            s_info['units'] = []
+            for item in self.units:
+                s_object = {}
+                s_info['units'].append({
+                    "name": item.get('name'),
+                    "status": self.unit_status(item, s_object)
+                })
+        return s_info
 
     # -------------------------------------------------------------------------
     #
@@ -75,6 +115,7 @@ class Scenario(dict):
 
     def run(self):
         for unit in self.units:
+            self.current_unit = unit.get('name')
             while not unit.completed:
                 try:
                     unit.mutate()
@@ -82,22 +123,20 @@ class Scenario(dict):
                     raise Exception("failed to mutate unit '%s': %s" %\
                                    (unit.name, str(ex)))
 
-                self.mutation_index += 1
-
-                # TODO: connect
+                if self.status != STATUS_CONNECTED:
+                    yield {"state": "connect"}
                 for r_unit in self.units:
                     data = None
                     try:
-                        print "-"*80        # TODO: remove
-                        self.status(r_unit) # TODO: remove
                         data = r_unit.render()
                     except Exception, ex:
                         raise Exception("failed to render unit '%s': %s" %\
                                        (unit.name, str(ex)))
 
-                    # TODO: send(data)
-                    # TODO: recv
+                    yield {"state": "process", "data": r_unit.render()}
+
                     time.sleep(self.sleep_time)
-                # TODO: disconnect
-        self.completed = True
+                if self.status != STATUS_CONNECTED:
+                    yield {"state": "disconnect"}
+        raise MutationsExhaustedException("all mutations exhausted")
 

@@ -7,6 +7,29 @@ from classes.Utils import Utils
 from classes.Config import Config
 from classes.Logger import Logger
 from classes.Scenario import Scenario
+from classes.MutationsExhaustedException import MutationsExhaustedException
+
+# -----------------------------------------------------------------------------
+# A mock media class for testing. To be removed once media drivers are ready
+# to use.
+# -----------------------------------------------------------------------------
+
+class mock_media:
+
+    def __init__(self):
+        pass
+
+    def connect(self):
+        print "CONNECT"
+
+    def disconnect(self):
+        print "DISCONNECT"
+
+    def send(self, data):
+        print "SEND: " + data
+
+    def receive(self):
+        print "RECEIVE"
 
 # -----------------------------------------------------------------------------
 #
@@ -42,9 +65,9 @@ class Worker(threading.Thread):
 
         for scenario_id in range(0, len(t_scenarios)):
             try:
-                self.scenarios.append(Scenario(scenario_id, 
-                                               self.job, 
-                                               self.config))
+                self.scenarios.append(Scenario(self.config,
+                                               scenario_id, 
+                                               self.job))
             except Exception, ex:
                 msg = self.logger.log("failed to initialize scenarios", "error",
                                 str(ex),
@@ -58,10 +81,21 @@ class Worker(threading.Thread):
     # -------------------------------------------------------------------------
 
     def run(self):
+        media = mock_media()
         for scenario in self.scenarios:
             print "[i] %s/%s" % (self.id, scenario.get('name'))
             try:
-                scenario.run()
+                for iteration in scenario.run():
+                    if iteration.get('state') == "connect":
+                        media.connect()
+                        continue
+                    if iteration.get('state') == "disconnect":
+                        media.disconnect()
+                        continue
+                    media.send(iteration.get('data'))
+                    data = media.receive()
+            except MutationsExhaustedException, mex:
+                pass
             except Exception, ex:
                 msg = self.logger.log("failed to execute scenarios", "error",
                                 str(ex),

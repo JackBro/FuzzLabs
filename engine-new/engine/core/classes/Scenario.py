@@ -8,8 +8,8 @@ from logic.Linear import Linear
 from primitives.block import block
 from classes.MutationsExhaustedException import MutationsExhaustedException
 
-STATUS_CONNECTED    = 1
-STATUS_DISCONNECTED = 2
+STATE_DISCONNECTED = 0
+STATE_CONNECTED = 1
 
 # -----------------------------------------------------------------------------
 #
@@ -24,7 +24,6 @@ class Scenario(dict):
         scenario            = job.get('scenarios')[scenario_id]
         self.id             = scenario_id
         self.sleep_time     = 0
-        self.completed      = False
         self.job            = job
         self.config         = config
         self.name           = scenario.get('name')
@@ -32,7 +31,7 @@ class Scenario(dict):
             self.name       = str(scenario_id)
         self.units          = []
         self.current_unit   = None
-        self.status         = STATUS_CONNECTED
+        self.state          = STATE_CONNECTED
 
         if self.job.get('session'):
             if self.job.get('session').get('sleep_time'):
@@ -48,15 +47,15 @@ class Scenario(dict):
     #
     # -------------------------------------------------------------------------
 
-    def driverConnected(self):
-        self.status = STATUS_CONNECTED
+    def stateConnected(self):
+        self.state = STATE_CONNECTED
 
     # -------------------------------------------------------------------------
     #
     # -------------------------------------------------------------------------
 
-    def driverDisconnected(self):
-        self.status = STATUS_DISCONNECTED
+    def stateDisconnected(self):
+        self.state = STATE_DISCONNECTED
 
     # -------------------------------------------------------------------------
     #
@@ -123,7 +122,7 @@ class Scenario(dict):
                     raise Exception("failed to mutate unit '%s': %s" %\
                                    (unit.name, str(ex)))
 
-                if self.status != STATUS_CONNECTED:
+                if self.state != STATE_CONNECTED:
                     yield {"state": "connect"}
                 for r_unit in self.units:
                     data = None
@@ -136,7 +135,7 @@ class Scenario(dict):
                     yield {"state": "process", "data": r_unit.render()}
 
                     time.sleep(self.sleep_time)
-                if self.status != STATUS_CONNECTED:
+                if self.state != STATE_DISCONNECTED:
                     yield {"state": "disconnect"}
         raise MutationsExhaustedException("all mutations exhausted")
 

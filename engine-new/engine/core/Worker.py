@@ -88,9 +88,11 @@ class Worker(threading.Thread):
                 for iteration in scenario.run():
                     if iteration.get('state') == "connect":
                         media.connect()
+                        scenario.stateConnected()
                         continue
                     if iteration.get('state') == "disconnect":
                         media.disconnect()
+                        scenario.stateDisconnected()
                         continue
                     media.send(iteration.get('data'))
                     data = media.receive()

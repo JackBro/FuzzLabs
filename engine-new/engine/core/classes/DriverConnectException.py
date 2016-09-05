@@ -1,2 +1,0 @@
-class DriverConnectException(Exception):
-    pass

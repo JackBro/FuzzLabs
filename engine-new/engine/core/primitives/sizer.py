@@ -142,5 +142,7 @@ class sizer(__primitive__):
         if self.get('inclusive'): length += self.get('size')
         if self.get('offset'): length += self.get('offset')
 
-        return self.format(length)
+        value = self.format(length)
+        value = super(sizer, self).render()
+        return value
 

@@ -131,5 +131,7 @@ class hash(__primitive__):
             if self.get('endian') == 'big': value = self.swap_endian(value)
         if self.get('format') == 'ascii': value = binascii.hexlify(value)
 
+        # TODO: have to apply 'after' transforms here
+
         return value
 

@@ -95,5 +95,6 @@ class rand(__primitive__):
 
     def render(self):
         if self.ignore: self.mutate()
-        return str(self.value)
+        value = super(rand, self).render()
+        return str(value)
 

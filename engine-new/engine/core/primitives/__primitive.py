@@ -3,13 +3,6 @@ from classes.Utils import Utils
 import glob
 import importlib
 
-global_transforms = {}
-for transform in glob.glob("transforms/*.py"):
-    name = transform.split(".")[0].split("/")[1]
-    lname = name.lower()
-    if lname[:2] == "__": continue
-    global_transforms[lname] = importlib.import_module("transforms." + name)
-
 # -----------------------------------------------------------------------------
 #
 # -----------------------------------------------------------------------------
@@ -93,7 +86,6 @@ class __primitive__(dict):
     def __init__(self, properties, all_properties = None, parent = None):
         self.parent          = parent
         self.iter_cnt        = 0
-        self.transforms      = properties.get('transforms')
         self.rendered        = ""
         self.completed        = False
         self.library         = []
@@ -105,6 +97,8 @@ class __primitive__(dict):
         properties = properties.get('properties')
         if not properties:
             raise Exception('missing properties for primitive')
+
+        self.transforms = properties.get('transforms')
 
         # Set up properties that were provided in the grammar
         for prop in properties:
@@ -125,12 +119,22 @@ class __primitive__(dict):
         if not self.get('name'):
             self['name'] = Utils.generate_name()
 
-        self.__init_transforms()
-
         if self.transforms:
             for transform in self.transforms:
                 if transform.get('apply') == "before":
-                    self.value = global_transforms[transform.get('name')].transform(self)
+                    tmod = None
+                    try:
+                        tmod = importlib.import_module("transforms." +\
+                                                       transform.get('name'))
+                        tmod = getattr(tmod, transform.get('name'))
+                    except Exception, ex:
+                        raise Exception("failed to import transform '%s': %s" %\
+                                        (transform.get('name'), str(ex)))
+                    try:
+                        self.value = tmod.transform(self)
+                    except Exception, ex:
+                        raise Exception("failed to execute transform '%s': %s" %\
+                                        (transform.get('name'), str(ex)))
 
         # First item in library is the original value
         if self.get('value'): self.library.append(self.value)
@@ -140,26 +144,6 @@ class __primitive__(dict):
             self.total_mutations = len(self.library)
         else:
             self.completed = True
-
-    # -------------------------------------------------------------------------
-    #
-    # -------------------------------------------------------------------------
-
-    def __init_transforms(self):
-        if self.transforms:
-            for transform in self.transforms:
-                name = transform.get('name')
-                if type(global_transforms[name]).__name__ == "instance":
-                    continue
-                if not name:
-                    raise Exception("transform name missing for primitive %s" %\
-                                    self.type)
-                try:
-                    inst = getattr(global_transforms[name], name)()
-                    global_transforms[name] = inst
-                except Exception, ex:
-                    raise Exception("failed to instantiate transform %s for primitive %s: %s" %\
-                                    (name, self.type, str(ex)))
 
     # -------------------------------------------------------------------------
     #
@@ -281,7 +265,19 @@ class __primitive__(dict):
         if self.transforms:
             for transform in self.transforms:
                 if transform.get('apply') == "after":
-                    value = global_transforms[transform.get('name')].transform(self)
+                    tmod = None
+                    try:
+                        tmod = importlib.import_module("transforms." +\
+                                                       transform.get('name'))
+                        tmod = getattr(tmod, transform.get('name'))
+                    except Exception, ex:
+                        raise Exception("failed to import transform '%s': %s" %\
+                                        (transform.get('name'), str(ex)))
+                    try:
+                        value = tmod.transform(self)
+                    except Exception, ex:
+                        raise Exception("failed to execute transform '%s': %s" %\
+                                        (transform.get('name'), str(ex)))
 
         return value
 

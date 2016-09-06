@@ -33,26 +33,6 @@ all_properties = [
     }
 ]
 
-global_logic = {}
-for logic in glob.glob("logic/*.py"):
-    name = logic.split(".")[0].split("/")[1]
-    lname = name.lower()
-    if lname[:2] == "__": continue
-    global_logic[lname] = importlib.import_module("logic." + name)
-
-global_transforms = {}
-for transform in glob.glob("transforms/*.py"):
-    name = transform.split(".")[0].split("/")[1]
-    lname = name.lower()
-    if lname[:2] == "__": continue
-    global_transforms[lname] = importlib.import_module("transforms." + name)
-
-global_primitives = {}
-for primitive in glob.glob("primitives/*.py"):
-    name = primitive.split(".")[0].split("/")[1]
-    if name[:2] == "__": continue
-    global_primitives[name] = importlib.import_module("primitives." + name)
-
 # -----------------------------------------------------------------------------
 #
 # -----------------------------------------------------------------------------
@@ -70,15 +50,18 @@ class block(__primitive__):
 
         for primitive in properties.get('primitives'):
             try:
-                inst = getattr(global_primitives[primitive.get('primitive')],
-                               primitive['primitive'])
+                pmod = importlib.import_module("primitives." +\
+                                               primitive.get('primitive'))
+                inst = getattr(pmod, primitive.get('primitive'))
                 inst = inst(primitive, self)
                 self.primitives.append(inst)
             except Exception, ex:
                 raise Exception("failed to instantiate primitive %s (%s)" % \
                       (primitive.get('primitive'), str(ex)))
 
-        self.logic = getattr(global_logic[self.logic],
+        lmod = importlib.import_module("logic." + self.logic[0].upper() +\
+                                       self.logic[1:])
+        self.logic = getattr(lmod,
                              self.logic[0].upper() + self.logic[1:])(self)
 
     # -------------------------------------------------------------------------

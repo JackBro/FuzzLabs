@@ -12,12 +12,6 @@ from classes.Logger import Logger
 from classes.Scenario import Scenario
 from classes.MutationsExhaustedException import MutationsExhaustedException
 
-drivers = {}
-for driver in glob.glob("drivers/*.py"):
-    name = driver.split(".")[0].split("/")[1]
-    if name[:2] == "__": continue
-    drivers[name] = importlib.import_module("drivers." + name)
-
 # -----------------------------------------------------------------------------
 #
 # -----------------------------------------------------------------------------
@@ -42,18 +36,24 @@ class Worker(threading.Thread):
                             self.job.get('id'))
             raise Exception(msg)
 
-        target = self.job.get('target')
-        if not target:
+        driver = None
+        value = self.job.get('target')
+        if value:
+            value = value.get('transport')
+            if value:
+                driver = value.get('media')
+
+        if not driver:
             msg = self.logger.log("failed to initialize job", "error",
                             "no target defined",
                             self.id,
                             self.job.get('id'))
             raise Exception(msg)
 
-        driver = target.get('transport').get('media')
         try:
-            inst = getattr(drivers[driver], driver)
-            self.driver = inst(target)
+            dmod = importlib.import_module("drivers." + driver)
+            inst = getattr(dmod, driver)
+            self.driver = inst(self.job.get('target'))
         except Exception, ex:
             msg = self.logger.log("failed to initialize driver", "error",
                             str(ex),

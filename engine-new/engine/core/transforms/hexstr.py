@@ -11,7 +11,8 @@ class hexstr:
     #
     # -------------------------------------------------------------------------
 
-    def transform(self, primitive):
+    @staticmethod
+    def transform(primitive):
         v = hex(primitive.value)
         if v[len(v) - 1:] == "L": v = v[:-1]
         return v

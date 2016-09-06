@@ -18,7 +18,10 @@
                 "name": "word_primitive_1",
                 "value": 1,
                 "full_range": 0,
-                "format": "ascii"
+                "format": "ascii",
+                "transforms": [
+                    {"name": "hexstr", "apply": "after"}
+                ]
             }
         }
     ]

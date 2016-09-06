@@ -114,14 +114,14 @@ class word(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
-        value = super(word, self).render()
         endian = ">"
         if self.get('endian') == "little":
             endian = "<"
         if self.format == "binary":
             if self.signed:
-                return struct.pack(endian + "h", value)
+                self.value = struct.pack(endian + "h", self.value)
             else:
-                return struct.pack(endian + "H", value)
+                self.value = struct.pack(endian + "H", self.value)
+        value = super(word, self).render()
         return str(value)
 

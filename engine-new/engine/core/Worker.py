@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 import os
+import sys
 import time
+import glob
 import inspect
+import importlib
 import threading
 from classes.Utils import Utils
 from classes.Config import Config
@@ -9,27 +12,11 @@ from classes.Logger import Logger
 from classes.Scenario import Scenario
 from classes.MutationsExhaustedException import MutationsExhaustedException
 
-# -----------------------------------------------------------------------------
-# A mock media class for testing. To be removed once media drivers are ready
-# to use.
-# -----------------------------------------------------------------------------
-
-class mock_media:
-
-    def __init__(self):
-        pass
-
-    def connect(self):
-        print "CONNECT"
-
-    def disconnect(self):
-        print "DISCONNECT"
-
-    def send(self, data):
-        print "SEND: " + data
-
-    def receive(self):
-        print "RECEIVE"
+drivers = {}
+for driver in glob.glob("drivers/*.py"):
+    name = driver.split(".")[0].split("/")[1]
+    if name[:2] == "__": continue
+    drivers[name] = importlib.import_module("drivers." + name)
 
 # -----------------------------------------------------------------------------
 #
@@ -41,14 +28,34 @@ class Worker(threading.Thread):
         threading.Thread.__init__(self)
         self.logger    = logger
         self.config    = config
-        self.id      = uuid
+        self.id        = uuid
         self.job       = None
+        self.driver    = None
         self.scenarios = []
 
         try:
             self.job = Utils.read_json(job)
         except Exception, ex:
             msg = self.logger.log("failed to initialize job", "error",
+                            str(ex),
+                            self.id,
+                            self.job.get('id'))
+            raise Exception(msg)
+
+        target = self.job.get('target')
+        if not target:
+            msg = self.logger.log("failed to initialize job", "error",
+                            "no target defined",
+                            self.id,
+                            self.job.get('id'))
+            raise Exception(msg)
+
+        driver = target.get('transport').get('media')
+        try:
+            inst = getattr(drivers[driver], driver)
+            self.driver = inst(target)
+        except Exception, ex:
+            msg = self.logger.log("failed to initialize driver", "error",
                             str(ex),
                             self.id,
                             self.job.get('id'))
@@ -81,21 +88,19 @@ class Worker(threading.Thread):
     # -------------------------------------------------------------------------
 
     def run(self):
-        media = mock_media()
         for scenario in self.scenarios:
-            print "[i] %s/%s" % (self.id, scenario.get('name'))
             try:
                 for iteration in scenario.run():
                     if iteration.get('state') == "connect":
-                        media.connect()
+                        self.driver.connect()
                         scenario.stateConnected()
                         continue
                     if iteration.get('state') == "disconnect":
-                        media.disconnect()
+                        self.driver.disconnect()
                         scenario.stateDisconnected()
                         continue
-                    media.send(iteration.get('data'))
-                    data = media.receive()
+                    self.driver.send(iteration.get('data'))
+                    data = self.driver.receive()
             except MutationsExhaustedException, mex:
                 pass
             except Exception, ex:
@@ -107,7 +112,9 @@ class Worker(threading.Thread):
                 raise Exception(msg)
 
 # -----------------------------------------------------------------------------
-# This is just to be able to easily test the mutation engine
+# This is just to:
+#     a) be able to easily test the worker
+#     b) be able to run a fuzzing job from the command line
 # -----------------------------------------------------------------------------
 
 ROOT = os.path.dirname(
@@ -117,10 +124,14 @@ ROOT = os.path.dirname(
 config = Config(ROOT, "/../config/config.json")
 logger = Logger()
 
+if len(sys.argv) != 2:
+    print "Usage: %s <job descriptor>" % sys.argv[0]
+    sys.exit(1)
+
 w = Worker(
         logger,
         config,
         Utils.generate_name(), 
-        "../jobs/9b2ee5b0384d2cfe9698cc1a5d310702.job")
+        sys.argv[1])
 w.start()
 

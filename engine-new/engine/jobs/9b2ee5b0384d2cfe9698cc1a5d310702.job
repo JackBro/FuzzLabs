@@ -3,13 +3,11 @@
     "id": "deadbeef-dead-beef-deadc0de",
     "session": {
         "sleep_time": 0,
-        "timeout": 3,
         "skip": 0
     },
     "target": {
         "transport": {
-        },
-        "endpoint": {
+            "media": "stdout"
         }
     },
     "conditions": {
@@ -19,7 +17,7 @@
     },
     "scenarios": [
         {
-            "name": "block fails handling block",
+            "name": "test scenario",
             "units": ["unit1", "unit3"]
         }
     ]

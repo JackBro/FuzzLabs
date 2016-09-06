@@ -1,21 +1,21 @@
 {
     "primitive": "block",
     "properties": {
-        "name":  "b01",
+        "name": "test_unit_1",
         "logic": "linear"
     },
     "primitives": [
         {
             "primitive": "static",
             "properties": {
-                "name": "stat1",
+                "name": "static_primitive_1",
                 "value": "static01 "
             }
         },
         {
             "primitive": "word",
             "properties": {
-                "name": "by01",
+                "name": "word_primitive_1",
                 "value": 1,
                 "full_range": 0,
                 "format": "ascii"

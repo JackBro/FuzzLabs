@@ -1,21 +1,14 @@
 {
     "primitive": "block",
     "properties": {
-        "name":  "b01",
+        "name":  "test_unit_3",
         "logic": "linear"
     },
     "primitives": [
         {
-            "primitive": "static",
-            "properties": {
-                "name": "stat2",
-                "value": " static02 "
-            }
-        },
-        {
             "primitive": "byte",
             "properties": {
-                "name": "by01",
+                "name": "byte_primitive_1",
                 "value": 1,
                 "full_range": 0,
                 "format": "ascii"
@@ -24,21 +17,21 @@
         {
             "primitive": "static",
             "properties": {
-                "name": "stat3",
+                "name": "static_primitive_3",
                 "value": " "
             }
         },
         {
             "primitive": "block",
             "properties": {
-                "name":  "b02",
+                "name":  "block_primitive_1",
                 "logic": "linear"
             },
             "primitives": [
                 {
                     "primitive": "rand",
                     "properties": {
-                        "name": "r01",
+                        "name": "random_primitive_1",
                         "value": "A",
                         "min_length": 32,
                         "max_length": 32,

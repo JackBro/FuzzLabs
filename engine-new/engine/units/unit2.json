@@ -1,7 +1,7 @@
 {
     "primitive": "block",
     "properties": {
-        "name":  "b01",
+        "name":  "test_unit_2",
         "logic": "linear"
     },
     "primitives": [

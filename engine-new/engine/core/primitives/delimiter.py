@@ -16,7 +16,7 @@ all_properties = [
         "name": "fuzzable",
         "type": "bool",
         "values": [0, 1],
-        "default": 0,
+        "default": 1,
         "error": "primitive requires fuzzable to be of type bool (1 or 0)"
     }
 ]
@@ -61,6 +61,6 @@ class delimiter(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
-        super(delimiter, self).render()
-        return str(self.value)
+        value = super(delimiter, self).render()
+        return str(value)
 

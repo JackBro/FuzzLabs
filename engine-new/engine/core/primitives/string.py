@@ -19,10 +19,10 @@ all_properties = [
         "error": "primitive requires size to be of type int or long"
     },
     {
-        "name": "max_len",
+        "name": "max_length",
         "type": ["int", "long"],
         "default": 0,
-        "error": "primitive requires max_len to be of type int or long"
+        "error": "primitive requires max_length to be of type int or long"
     },
     {
         "name": "padding",
@@ -304,9 +304,9 @@ class string(__primitive__):
 
         for item in temp_library:
             v = item
-            if self.get('max_len'):
-                if len(v) > self.get('max_len'):
-                    v = v[:self.get('max_len')]
+            if self.get('max_length'):
+                if len(v) > self.get('max_length'):
+                    v = v[:self.get('max_length')]
 
             if self.get('size'):
                 if len(v) > self.get('size'): continue
@@ -341,6 +341,6 @@ class string(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
-        super(string, self).render()
-        return self.value
+        value = super(string, self).render()
+        return value
 

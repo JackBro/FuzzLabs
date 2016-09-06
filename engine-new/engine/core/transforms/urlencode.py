@@ -13,5 +13,7 @@ class urlencode:
     #
     # -------------------------------------------------------------------------
 
-    def transform(self, primitive):
-        return urllib.quote_plus(primitive.value)
+    @staticmethod
+    def transform(value):
+        value = str(value)
+        return urllib.quote_plus(value)

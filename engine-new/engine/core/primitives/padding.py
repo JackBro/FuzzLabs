@@ -36,10 +36,10 @@ all_properties = [
     },
     {
         "name": "value",
-        "type": "str",
+        "type": "int",
         "mandatory": 1,
-        "default": "",
-        "error": "primitive requires value to be of type str"
+        "default": 0,
+        "error": "primitive requires value to be of type int"
     }
 ]
 
@@ -74,15 +74,16 @@ class padding(__primitive__):
         v = b.render()
         value = ""
         if self.align > len(v):
-            value = self.value * (self.align - len(v))
+            value = chr(self.value) * (self.align - len(v))
         elif self.align < len(v) and self.get('expand'):
             # This is a mess, but I just want to sleep...
             d = self.align - (len(v) - (self.align * (len(v) / self.align)))
             d = (len(v) + d) / self.align
             d = (self.align * d) - len(v)
-            value = self.value * d
+            value = chr(self.value) * d
         else:
             pass
 
+        value = self.apply_transforms(value, True)
         return value
 

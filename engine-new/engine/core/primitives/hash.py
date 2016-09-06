@@ -130,8 +130,7 @@ class hash(__primitive__):
         if t not in ['adler32', 'crc32']:
             if self.get('endian') == 'big': value = self.swap_endian(value)
         if self.get('format') == 'ascii': value = binascii.hexlify(value)
-
-        # TODO: have to apply 'after' transforms here
-
+        self.value = value
+        value = super(hash, self).render()
         return value
 

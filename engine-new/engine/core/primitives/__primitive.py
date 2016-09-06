@@ -122,19 +122,7 @@ class __primitive__(dict):
         if self.transforms:
             for transform in self.transforms:
                 if transform.get('apply') == "before":
-                    tmod = None
-                    try:
-                        tmod = importlib.import_module("transforms." +\
-                                                       transform.get('name'))
-                        tmod = getattr(tmod, transform.get('name'))
-                    except Exception, ex:
-                        raise Exception("failed to import transform '%s': %s" %\
-                                        (transform.get('name'), str(ex)))
-                    try:
-                        self.value = tmod.transform(self)
-                    except Exception, ex:
-                        raise Exception("failed to execute transform '%s': %s" %\
-                                        (transform.get('name'), str(ex)))
+                    self.value = self.apply_transforms(self.value)
 
         # First item in library is the original value
         if self.get('value'): self.library.append(self.value)
@@ -144,6 +132,29 @@ class __primitive__(dict):
             self.total_mutations = len(self.library)
         else:
             self.completed = True
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    def apply_transforms(self, value, after = False):
+        if self.transforms:
+            for transform in self.transforms:
+                if after and transform.get('apply') == 'before': continue
+                tmod = None
+                try:
+                    tmod = importlib.import_module("transforms." +\
+                                                   transform.get('name'))
+                    tmod = getattr(tmod, transform.get('name'))
+                except Exception, ex:
+                    raise Exception("failed to import transform '%s': %s" %\
+                                    (transform.get('name'), str(ex)))
+                try:
+                    value = tmod.transform(value)
+                except Exception, ex:
+                    raise Exception("failed to execute transform '%s': %s" %\
+                                    (transform.get('name'), str(ex)))
+        return value
 
     # -------------------------------------------------------------------------
     #
@@ -265,20 +276,7 @@ class __primitive__(dict):
         if self.transforms:
             for transform in self.transforms:
                 if transform.get('apply') == "after":
-                    tmod = None
-                    try:
-                        tmod = importlib.import_module("transforms." +\
-                                                       transform.get('name'))
-                        tmod = getattr(tmod, transform.get('name'))
-                    except Exception, ex:
-                        raise Exception("failed to import transform '%s': %s" %\
-                                        (transform.get('name'), str(ex)))
-                    try:
-                        value = tmod.transform(self)
-                    except Exception, ex:
-                        raise Exception("failed to execute transform '%s': %s" %\
-                                        (transform.get('name'), str(ex)))
-
+                    value = self.apply_transforms(value)
         return value
 
     # -------------------------------------------------------------------------

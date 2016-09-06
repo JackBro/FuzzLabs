@@ -103,14 +103,14 @@ class dword(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
-        value = super(dword, self).render()
         endian = ">"
         if self.get('endian') == "little":
             endian = "<"
         if self.format == "binary":
             if self.signed:
-                return struct.pack(endian + "i", value)
+                self.value = struct.pack(endian + "i", self.value)
             else:
-                return struct.pack(endian + "I", value)
+                self.value = struct.pack(endian + "I", self.value)
+        value = super(dword, self).render()
         return str(value)
 

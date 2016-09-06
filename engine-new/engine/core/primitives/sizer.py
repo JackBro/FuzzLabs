@@ -124,16 +124,30 @@ class sizer(__primitive__):
         if self.get('format') == "ascii":
             return str(value)
         else:
-            return Utils.format_binary_numeric(value, 
-                                               self.get('size'),
-                                               self.get('endian'))
+            endian = ">"
+            if self.get('endian') == "little":
+                endian = "<"
+
+            format = "I"
+            if self.get('size') == 1:
+                format = "B"
+            elif self.get('size') == 4:
+                format = "I"
+            elif self.get('size') == 8:
+                format = "Q"
+
+            try:
+                return struct.pack(endian + format, value)
+            except Exception, ex:
+                raise Exception('failed to render sizer %s (%s)' %\
+                (self.name,  str(ex)))
 
     # -------------------------------------------------------------------------
     #
     # -------------------------------------------------------------------------
 
     def render(self):
-        if self.fuzzable and not self.complete:
+        if self.fuzzable and not self.completed:
             value = super(sizer, self).render()
             return self.format(value)
 
@@ -143,6 +157,6 @@ class sizer(__primitive__):
         if self.get('offset'): length += self.get('offset')
 
         value = self.format(length)
-        value = super(sizer, self).render()
+        value = self.apply_transforms(value, True)
         return value
 

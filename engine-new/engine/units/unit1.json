@@ -6,22 +6,38 @@
     },
     "primitives": [
         {
+            "primitive": "block",
+            "properties": {
+                "name": "block_1",
+                "logic": "linear"
+            },
+            "primitives": [
+                {
+                    "primitive": "rand",
+                    "properties": {
+                        "name": "rand_primtive_1",
+                        "min_length": 32,
+                        "max_length": 32,
+                        "transforms": [
+                            {"name": "urlencode", "apply": "after"}
+                        ]
+                    }
+                }
+            ]
+        },
+        {
             "primitive": "static",
             "properties": {
-                "name": "static_primitive_1",
-                "value": "static01 "
+                "name": "static_1",
+                "value": " "
             }
         },
         {
-            "primitive": "word",
+            "primitive": "sizer",
             "properties": {
-                "name": "word_primitive_1",
-                "value": 1,
-                "full_range": 0,
-                "format": "ascii",
-                "transforms": [
-                    {"name": "hexstr", "apply": "after"}
-                ]
+                "name": "sizer_1",
+                "block": "block_1",
+                "format": "ascii"
             }
         }
     ]

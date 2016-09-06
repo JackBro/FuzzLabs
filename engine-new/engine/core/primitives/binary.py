@@ -71,7 +71,7 @@ class binary(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
-        value = super(binary, self).render()
-        value = "".join(map(chr, value))
+        # This primitive does not support transforms
+        value = "".join(map(chr, self.value))
         return str(value)
 

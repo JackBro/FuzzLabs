@@ -103,14 +103,14 @@ class qword(__primitive__):
     # -------------------------------------------------------------------------
 
     def render(self):
-        value = super(qword, self).render()
         endian = ">"
         if self.get('endian') == "little":
             endian = "<"
         if self.format == "binary":
             if self.signed:
-                return struct.pack(endian + "q", value)
+                self.value = struct.pack(endian + "q", self.value)
             else:
-                return struct.pack(endian + "Q", value)
+                self.value = struct.pack(endian + "Q", self.value)
+        value = super(qword, self).render()
         return str(value)
 

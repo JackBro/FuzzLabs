@@ -9,7 +9,10 @@
             "primitive": "block",
             "properties": {
                 "name": "block_1",
-                "logic": "linear"
+                "logic": "linear",
+                "transforms": [
+                    {"name": "urlencode", "apply": "after"}
+                ]
             },
             "primitives": [
                 {
@@ -24,21 +27,6 @@
                     }
                 }
             ]
-        },
-        {
-            "primitive": "static",
-            "properties": {
-                "name": "static_1",
-                "value": " "
-            }
-        },
-        {
-            "primitive": "sizer",
-            "properties": {
-                "name": "sizer_1",
-                "block": "block_1",
-                "format": "ascii"
-            }
         }
     ]
 }

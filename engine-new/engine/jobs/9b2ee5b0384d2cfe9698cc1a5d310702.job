@@ -7,7 +7,7 @@
     },
     "target": {
         "transport": {
-            "media": "stdout"
+            "media": "stderr"
         }
     },
     "conditions": {

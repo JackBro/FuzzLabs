@@ -6,7 +6,7 @@ from classes.Utils import Utils
 parser = reqparse.RequestParser()
 parser.add_argument('apikey', type=str, required=True, location='args')
 
-class ResourcePing(Resource):
+class ResourceListJobs(Resource):
 
     def __init__(self, **kwargs):
         self.root   = kwargs.get('root')
@@ -35,5 +35,13 @@ class ResourcePing(Resource):
 
     def get(self):
         self.check_access()
-        return {"message": "pong"}, 200
+        jobs = []
+        files = Utils.list_directory("./jobs")
+        for file in files:
+            f = file.split('.')
+            if f[1] != "job": continue
+            j_data = Utils.read_json("./jobs/" + file)
+            if not j_data.get('id'): continue
+            jobs.append(j_data.get('id'))
+        return {"message": jobs}, 200
 

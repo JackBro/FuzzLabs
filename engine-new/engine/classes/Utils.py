@@ -1,3 +1,4 @@
+import os
 import json
 import uuid
 import importlib
@@ -21,6 +22,17 @@ class Utils:
         except Exception, ex:
             raise Exception("failed to load file (%s)" % str(ex))
         return data
+
+    # -------------------------------------------------------------------------
+    #
+    # -------------------------------------------------------------------------
+
+    @staticmethod
+    def list_directory(dir):
+        all_files = []
+        for root, path, files in os.walk(dir):
+            all_files += files
+        return all_files
 
     # -------------------------------------------------------------------------
     #

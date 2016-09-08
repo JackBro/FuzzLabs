@@ -1,14 +1,15 @@
 # FuzzLabs
 
-**18/07/2016**: The new mutation engine is almost ready. It is more flexible and very modular. It needs some more testing though. Started refactoring / re-writing the other parts of the code too. The main focus is on better usability and even better flexibility. Basically, I said good bye to Sulley completely. The only similarity is some lines of code here and there in the primitives.
+**08/09/2016**: The core of the new mutation engine (under engine-core-new branch) is complete.
+Some of the next steps:
 
-**17/06/2016**: Started implementing a new mutation engine. So far it seems to be pretty cool. Feel free to have a look at the code (engine-core-new branch) to see what to expect.
+ * (re-)implement the drivers. Some of the initial planned ones: stdout (done), stderr (done), cli (next), file, network
+ * implement that units can include other units
 
-**11/04/2016**: The project is **not** dead. Things are happening in the background just a bit slowly as priorities have changed.
+Please note the current version in the master branch is discontinued from this point and very unlikely it will receive any updates. At the end it will be completely replaced with the new version of the framework.
 
 
-FuzzLabs is a modular fuzzing framework which uses a modified version of Sulley as it's core fuzzing engine.
-For more information please refer to the Wiki.
+FuzzLabs is a modular fuzzing framework. For more information please refer to the Wiki.
 
 Website: fuzzlabs.dcnws.com
 

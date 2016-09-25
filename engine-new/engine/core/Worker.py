@@ -33,7 +33,7 @@ class Worker(threading.Thread):
             msg = self.logger.log("failed to initialize job", "error",
                             str(ex),
                             self.id,
-                            self.job.get('id'))
+                            job)
             raise Exception(msg)
 
         driver = None

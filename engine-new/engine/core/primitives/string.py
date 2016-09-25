@@ -25,6 +25,12 @@ all_properties = [
         "error": "primitive requires max_length to be of type int or long"
     },
     {
+        "name": "ascii",
+        "type": ["int", "long"],
+        "default": 0,
+        "error": "primitive requires ascii to be of type int or long"
+    },
+    {
         "name": "padding",
         "type": "str",
         "default": "\x00",
@@ -304,6 +310,13 @@ class string(__primitive__):
 
         for item in temp_library:
             v = item
+
+            if self.ascii:
+                if all(i >= 32 for i in map(ord, item)) and all(i <= 126 for i in map(ord, item)):
+                    pass
+                else:
+                    continue
+
             if self.get('max_length'):
                 if len(v) > self.get('max_length'):
                     v = v[:self.get('max_length')]

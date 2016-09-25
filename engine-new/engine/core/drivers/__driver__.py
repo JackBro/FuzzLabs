@@ -1,5 +1,4 @@
 import os
-import abc
 import sys
 import json
 import time
@@ -12,12 +11,11 @@ import select
 
 # -----------------------------------------------------------------------------
 # A driver class is an interface for the fuzzer, basically the sulley core, to 
-# send and receive data. The media class implements a skeleton which can be 
+# send and receive data. The driver class implements a skeleton which can be 
 # extended by other drivers.
 # -----------------------------------------------------------------------------
 
 class driver:
-    __metaclass__  = abc.ABCMeta
 
     # -------------------------------------------------------------------------
     # Standard constructor/initialization
@@ -28,18 +26,18 @@ class driver:
         self.socket = None
 
     # -------------------------------------------------------------------------
-    # The media_socket function should return the socket associated with the 
-    # media.
+    # The driver_socket function should return the socket associated with the 
+    # driver.
     # -------------------------------------------------------------------------
 
-    def media_socket(self):
+    def driver_socket(self):
         return self.socket
 
     # -------------------------------------------------------------------------
     # This function is responsible of building up a connection to the target
-    # set via the media_target function.
-    # As each transport media might require a completely different way to build
-    # up a connection, this function is empty and each transport media handler
+    # set via the driver_target function.
+    # As each transport driver might require a completely different way to build
+    # up a connection, this function is empty and each transport driver handler
     # should override it to implement the necessary functionality.
     # -------------------------------------------------------------------------
 

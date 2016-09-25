@@ -6,27 +6,13 @@
     },
     "primitives": [
         {
-            "primitive": "block",
+            "primitive": "string",
             "properties": {
-                "name": "block_1",
-                "logic": "linear",
-                "transforms": [
-                    {"name": "urlencode", "apply": "after"}
-                ]
-            },
-            "primitives": [
-                {
-                    "primitive": "rand",
-                    "properties": {
-                        "name": "rand_primtive_1",
-                        "min_length": 32,
-                        "max_length": 32,
-                        "transforms": [
-                            {"name": "urlencode", "apply": "after"}
-                        ]
-                    }
-                }
-            ]
+                "name": "string_primtive_1",
+                "ascii": 1,
+                "value": "test",
+                "max_length": 256
+            }
         }
     ]
 }

@@ -62,6 +62,7 @@ class Scenario(dict):
     # -------------------------------------------------------------------------
 
     def load_unit(self, unit):
+        data = None
         u_path = self.config.get('root') + "/units/" + unit + ".json"
         u_path = os.path.dirname(
             os.path.abspath(
@@ -69,6 +70,9 @@ class Scenario(dict):
             ))) + "/../../units/" + unit + ".json"
         try:
             data = Utils.read_json(u_path)
+        except Exception, ex:
+            raise Exception("failed to read unit '%s': %s" % (unit, str(ex)))
+        try:
             if not data.get('properties'):
                 data['properties'] = {}
             if data.get('properties').get('name'):

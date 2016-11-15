@@ -16,15 +16,10 @@ class commandline(driver):
     def __init__(self, driver_config):
         driver.__init__(self, driver_config)
         self.command    = None
-        self.parameters = None
         try:
             self.command = self.driver_config.get('target')
         except Exception, ex:
             raise Exception('no target definition found: %s' % str(ex))
-        try:
-            self.parameters = self.command.get('parameters')
-        except Exception, ex:
-            raise Exception('no command parameters found: %s' % str(ex))
         try:
             self.command = self.command.get('command')
         except Exception, ex:
@@ -42,13 +37,8 @@ class commandline(driver):
     # -------------------------------------------------------------------------
 
     def send(self, data):
-        params = copy.deepcopy(self.parameters)
-        c = 0
-        for p in params:
-            if p == '<<payload>>':
-                params[c] = data
-            c += 1
-        params = [self.command] + params
+
+        params = [self.command] + data
 
         try:
             if subprocess.call(params, 

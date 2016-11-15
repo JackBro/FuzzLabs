@@ -7,13 +7,7 @@
     },
     "target": {
         "transport": {
-            "media": "commandline"
-        },
-        "target": {
-            "command": "/Users/zsoltimre/Desktop/Devel/FuzzLabs/engine-new/engine/test",
-            "parameters": [
-                "<<payload>>"
-            ]
+            "media": "stdout"
         }
     },
     "conditions": {

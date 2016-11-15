@@ -1,6 +1,7 @@
 import os
 import json
 import uuid
+import inspect
 import importlib
 
 # =============================================================================
@@ -114,4 +115,11 @@ class Utils:
             if case in library: continue
             ilist.append(case)
         return ilist
+
+    @staticmethod
+    def getRoot():
+        return os.path.dirname(
+                os.path.abspath(
+                    inspect.getfile(inspect.currentframe()
+        ) + "/../"))
 

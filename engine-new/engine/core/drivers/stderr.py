@@ -28,6 +28,7 @@ class stderr(driver):
 
     def send(self, data):
         sys.stderr.write(data + "\n")
+        return True
 
     # -------------------------------------------------------------------------
     #

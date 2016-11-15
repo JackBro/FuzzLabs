@@ -1,5 +1,6 @@
 import glob
 import importlib
+from classes.Utils import Utils
 from logic.Linear import Linear
 from primitives.__primitive import __primitive__
 
@@ -12,13 +13,6 @@ all_properties = [
         "error": "primitive requires fuzzable to be of type bool (1 or 0)"
     },
     {
-        "name": "group",
-        "type": "str",
-        "default": "",
-        "mandatory": 0,
-        "error": "primitive requires group to be of type str"
-    },
-    {
         "name": "logic",
         "type": "str",
         "value": "linear",
@@ -27,9 +21,9 @@ all_properties = [
         "error": "primitive requires logic to be of type str"
     },
     {
-        "name": "name",
+        "name": "unit",
         "type": "str",
-        "error": "primitive requires name to be of type str"
+        "error": "primitive requires unit to be of type str"
     }
 ]
 
@@ -37,7 +31,7 @@ all_properties = [
 #
 # -----------------------------------------------------------------------------
 
-class block(__primitive__):
+class include(__primitive__):
 
     # -------------------------------------------------------------------------
     #
@@ -48,7 +42,8 @@ class block(__primitive__):
         __primitive__.__init__(self, properties, all_properties, parent)
         self.completed = False
 
-        self.load_primitives(properties.get('primitives'))
+        unit = Utils.read_json(Utils.getRoot() + "/units/" + self.unit + ".json")
+        self.load_primitives(unit.get('primitives'))
 
         lmod = importlib.import_module("logic." + self.logic[0].upper() +\
                                        self.logic[1:])

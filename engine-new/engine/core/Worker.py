@@ -92,15 +92,19 @@ class Worker(threading.Thread):
             try:
                 for iteration in scenario.run():
                     if iteration.get('state') == "connect":
-                        self.driver.connect()
+                        rc = self.driver.connect()
                         scenario.stateConnected()
                         continue
                     if iteration.get('state') == "disconnect":
-                        self.driver.disconnect()
+                        rc = self.driver.disconnect()
                         scenario.stateDisconnected()
                         continue
-                    self.driver.send(iteration.get('data'))
-                    data = self.driver.receive()
+                    rc = self.driver.send(iteration.get('data'))
+                    if not rc:
+                        # TODO: handle according to job spec
+                        # Below is only for testing
+                        raise Exception('CRASH')
+                    rc  = self.driver.receive()
             except MutationsExhaustedException, mex:
                 pass
             except Exception, ex:

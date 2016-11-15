@@ -28,6 +28,7 @@ class stdout(driver):
 
     def send(self, data):
         print(data)
+        return True
 
     # -------------------------------------------------------------------------
     #

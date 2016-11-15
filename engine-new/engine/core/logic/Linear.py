@@ -36,5 +36,5 @@ class Linear:
             r = item.render()
             if type(r).__name__ == "generator": r = r.next()
             data.append("".join(r))
-        return "".join(data)
+        return data
 
